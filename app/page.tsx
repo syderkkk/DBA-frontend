@@ -1,7 +1,95 @@
+/* import Link from "next/link"; */
 
+import CharacterCard from "@/components/CharacterCard";
+import Link from "next/link";
 
 export default function Home() {
   return (
-    <h1>Hello world!</h1>
+    <main className="flex min-h-screen flex-col">
+      {/* Hero Section  */}
+      <section className="relative overflow-hidden py-20 md:py-32">
+        <div className="absolute inset-0 z-0 opacity-80">
+          {/* Fondo con patrón de fantasía */}
+          <div className="h-full w-full bg-[url('/background.webp')] bg-repeat opacity-90"></div>
+        </div>
+
+        <div className="container relative z-10 mx-auto flex flex-col items-center px-4 text-center">
+          <h1 className="mb-6 text-5xl font-extrabold tracking-tight text-red-500 drop-shadow-lg sm:text-7xl">
+            <span className="block text-yellow-400">ClassCraft</span>
+            <span className="mt-2 block text-3xl font-bold sm:text-5xl">
+              Transforma tu aula en aventura
+            </span>
+          </h1>
+          <p className="mb-10 max-w-2xl text-xl text-pink-900">
+            La plataforma educativa de gamificación que convierte el aprendizaje
+            en una épica aventura. Profesores y estudiantes unidos en un mundo
+            de magia, poder y conocimiento.
+          </p>
+          <div className="flex flex-col space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
+            <>
+              <Link
+                href="/auth/login"
+                className="transform rounded-lg bg-yellow-500 px-8 py-3 font-bold text-blue-900 transition duration-300 hover:bg-yellow-400 hover:shadow-lg"
+              >
+                Iniciar Sesión
+              </Link>
+
+              <Link
+                href="/auth/register"
+                className="transform rounded-lg border-2 border-yellow-500 bg-transparent px-8 py-3 font-bold text-yellow-500 transition duration-300 hover:bg-yellow-500/10"
+              >
+                Registrarse
+              </Link>
+            </>
+          </div>
+        </div>
+      </section>
+
+      { /* Character Class Section */ }
+      <section className="bg-blue-900/50 py-16">
+      <div className="container mx-auto px-4">
+        <h2 className="mb-12 text-center text-4xl font-bold text-white">Elige tu Clase de Personaje</h2>
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+
+          {/* Guerrero */}
+          <CharacterCard
+          title="Guerrero"
+          description="Protectores valientes con gran resistencia. Defienden a sus compañeros del fracaso y protegen al equipo."
+          imageUrl="https://imgs.search.brave.com/7jO95c3IM9Ym3Tp7d6WqxcWn0rs4CTdlfDQTznaOCH8/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/cG5nYXJ0cy5jb20v/ZmlsZXMvNC9XYXJy/aW9yLVRyYW5zcGFy/ZW50LUltYWdlcy5w/bmc"
+          features={[
+                "Alto HP para resistir desafíos",
+                "Habilidades de protección de equipo",
+                "Especialistas en perseverencia",
+              ]}
+          />
+
+          { /* Mago */ }
+          <CharacterCard
+          title="Mago"
+          description="Protectores valientes con gran resistencia. Defienden a sus compañeros del fracaso y protegen al equipo."
+          imageUrl="https://w7.pngwing.com/pngs/299/774/png-transparent-wizard-student-classcraft-studio-classroom-learning-wizard-superhero-class-fictional-character.png"
+          features={[
+                "Alto HP para resistir desafíos",
+                "Habilidades de protección de equipo",
+                "Especialistas en perseverencia",
+              ]}
+          />
+
+          { /* Sanador */ }
+          <CharacterCard
+          title="Sanador"
+          description="Protectores valientes con gran resistencia. Defienden a sus compañeros del fracaso y protegen al equipo."
+          imageUrl="https://e7.pngegg.com/pngimages/329/133/png-clipart-healer-student-classcraft-studio-classmates-miscellaneous-game-thumbnail.png"
+          features={[
+                "Alto HP para resistir desafíos",
+                "Habilidades de protección de equipo",
+                "Especialistas en perseverencia",
+              ]}
+          />
+          
+        </div>
+      </div>
+      </section>
+    </main>
   );
 }
