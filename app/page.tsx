@@ -1,6 +1,6 @@
 /* import Link from "next/link"; */
 
-import CharacterCard from "@/components/CharacterCard";
+import CharacterCard from "./ui/CharacterdCard";
 import Link from "next/link";
 
 export default function Home() {
