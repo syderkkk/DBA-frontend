@@ -3,45 +3,125 @@
 import CharacterCard from "./ui/CharacterdCard";
 import Link from "next/link";
 import FeatureCard from "./ui/FeatureCard";
+import NavBar from "./ui/NavBar";
+import Image from "next/image";
 
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col">
+      <NavBar></NavBar>
       {/* Hero Section  */}
-      <section className="relative overflow-hidden py-20 md:py-32">
-        <div className="absolute inset-0 z-0 opacity-80">
+      <section className="relative overflow-hidden min-h-[60vh] py-20 md:py-32">
+        <div className="absolute inset-0 z-0">
           {/* Fondo con patrón de fantasía */}
-          <div className="h-full w-full bg-[url('/background.webp')] bg-repeat opacity-90"></div>
+          <div className="relative h-full w-full">
+            <Image
+              src={"/m-bg.png"}
+              alt="/m-bg."
+              fill
+              className="object-cover"
+              priority
+            ></Image>
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent"></div>
         </div>
 
         <div className="container relative z-10 mx-auto flex flex-col items-center px-4 text-center">
-          <h1 className="mb-6 text-5xl font-extrabold tracking-tight text-red-500 drop-shadow-lg sm:text-7xl">
-            <span className="block text-yellow-400">ClassCraft</span>
-            <span className="mt-2 block text-3xl font-bold sm:text-5xl">
-              Transforma tu aula en aventura
+          <h1 className="mb-6 text-5xl font-extrabold tracking-tight text-yellow-400 drop-shadow-lg sm:text-7xl">
+            <span className="block text-yellow-400">{/* ClassCraft */}</span>
+            <span className="mt-2 block text-3xl font-bold text-blue-200 sm:text-5xl">
+              {/* Transforma tu aula en aventura */}
             </span>
           </h1>
-          <p className="mb-10 max-w-2xl text-xl text-pink-900">
-            La plataforma educativa de gamificación que convierte el aprendizaje
-            en una épica aventura. Profesores y estudiantes unidos en un mundo
-            de magia, poder y conocimiento.
-          </p>
-          <div className="flex flex-col space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
-            <>
-              <Link
-                href="/auth/login"
-                className="transform rounded-lg bg-yellow-500 px-8 py-3 font-bold text-blue-900 transition duration-300 hover:bg-yellow-400 hover:shadow-lg"
-              >
-                Iniciar Sesión
-              </Link>
+        </div>
+      </section>
 
-              <Link
-                href="/auth/register"
-                className="transform rounded-lg border-2 border-yellow-500 bg-transparent px-8 py-3 font-bold text-yellow-500 transition duration-300 hover:bg-yellow-500/10"
-              >
-                Registrarse
-              </Link>
-            </>
+      {/* Call to Action */}
+      <section className="py-12 text-center">
+        <div className="container mx-auto px-4">
+          <h2 className="mb-6 text-3xl font-bold">
+            Haz tus clases inolvidables
+          </h2>
+          <Link
+            href="/auth/register"
+            className="inline-block transform rounded-full bg-green-500 px-10 py-4 text-lg text-white transition duration-300 hover:bg-green-700 hover:shadow-lg"
+          >
+            Empieza ahora. ¡Es Gratis!
+          </Link>
+          <div className="flex justify-center items-center my-8">
+            <Image
+              src="/Claasscraft.jpg"
+              alt="Classcraft"
+              width={300}
+              height={300}
+              className="rounded-lg shadow-lg"
+            ></Image>
+          </div>
+          <div className="mt-8">
+            <p className="mt-4 text-2xl text-gray-700 text-center max-w-2xl mx-auto">
+              Transforma cualquier clase en un juego de rol que fomenta una
+              colaboración más estrecha entre los estudiantes y alienta un mejor
+              comportamiento.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <h2 className="mb-12 text-center text-4xl">
+            <strong>Herramientas poderosas</strong> para <strong>impulsar en compromiso</strong>
+            <div className="flex justify-center items-center my-8">
+            <Image
+              src="/Claasscraft.jpg"
+              alt="Classcraft"
+              width={300}
+              height={300}
+              className="rounded-lg shadow-lg"
+            ></Image>
+          </div>
+          </h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 justify-center items-center max-w-4xl mx-auto">
+            {/* Característica 1 */}
+            <FeatureCard
+              title="Mejora el Ambiente en la Clase"
+              description="Incita a los alumnos con riesgos reales y recompensas en clase y los observa volviéndose mejores alumnos conforme vayan progresando en el juego"
+              iconSrc="/feature/feature1.svg"
+            ></FeatureCard>
+
+            {/* Característica 2 */}
+            <FeatureCard
+              title="Equipos Colaborativos"
+              description="Los estudiantes trabajan en equipos, donde cada miembro aporta sus habilidades únicas para enfrentar desafíos académicos juntos."
+              iconSrc="/feature/feature2.svg"
+            ></FeatureCard>
+
+            {/* Característica 3 */}
+            <FeatureCard
+              title="Poderes y Habilidades
+"
+              description="Cada clase de personaje tiene poderes únicos que reflejan diferentes estilos de aprendizaje y fortalezas académicas."
+              iconSrc="/feature/feature3.svg"
+            ></FeatureCard>
+            {/* Característica 4 */}
+            <FeatureCard
+              title="Eventos y Desafíos"
+              description="Desafíos épicos, batallas contra jefes y eventos especiales transforman exámenes y proyectos en emocionantes aventuras."
+              iconSrc="/feature/feature4.svg"
+            ></FeatureCard>
+            {/* Característica 5 */}
+            <FeatureCard
+              title="Dashboard para Profesores"
+              description="Potentes herramientas para que los profesores monitoreen el progreso, asignen recompensas y gestionen el comportamiento de forma divertida."
+              iconSrc="/feature/feature5.svg"
+            ></FeatureCard>
+            {/* Característica 6 */}
+            <FeatureCard
+              title="Tienda de Equipamiento"
+              description="Los estudiantes pueden gastar oro ganado en personalizar sus personajes con armas, armaduras y accesorios que ofrecen bonificaciones."
+              iconSrc="/feature/feature6.svg"
+            ></FeatureCard>
           </div>
         </div>
       </section>
@@ -89,83 +169,6 @@ export default function Home() {
               ]}
             />
           </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <h2 className="mb-12 text-center text-4xl font-bold text-white">
-            Características Principales
-          </h2>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-
-
-
-            {/* Característica 1 */}
-            <FeatureCard
-            title="Sistema de Puntos y Nivele"
-            description="Los estudiantes ganan XP por buen comportamiento y logros académicos, subiendo de nivel y desbloqueando nuevos poderes."
-            iconSrc="/feature/feature1.svg"
-            >
-            </FeatureCard>
-
-            {/* Característica 2 */}
-            <FeatureCard
-            title="Equipos Colaborativos"
-            description="Los estudiantes trabajan en equipos, donde cada miembro aporta sus habilidades únicas para enfrentar desafíos académicos juntos."
-            iconSrc="/feature/feature2.svg"
-            >
-            </FeatureCard>
-            
-            {/* Característica 3 */}
-            <FeatureCard
-            title="Poderes y Habilidades
-"
-            description="Cada clase de personaje tiene poderes únicos que reflejan diferentes estilos de aprendizaje y fortalezas académicas."
-            iconSrc="/feature/feature3.svg"
-            >
-            </FeatureCard>
-            {/* Característica 4 */}
-            <FeatureCard
-            title="Eventos y Desafíos"
-            description="Desafíos épicos, batallas contra jefes y eventos especiales transforman exámenes y proyectos en emocionantes aventuras."
-            iconSrc="/feature/feature4.svg"
-            >
-            </FeatureCard>
-            {/* Característica 5 */}
-            <FeatureCard
-            title="Dashboard para Profesores"
-            description="Potentes herramientas para que los profesores monitoreen el progreso, asignen recompensas y gestionen el comportamiento de forma divertida."
-            iconSrc="/feature/feature5.svg"
-            >
-            </FeatureCard>
-            {/* Característica 6 */}
-            <FeatureCard
-            title="Tienda de Equipamiento"
-            description="Los estudiantes pueden gastar oro ganado en personalizar sus personajes con armas, armaduras y accesorios que ofrecen bonificaciones."
-            iconSrc="/feature/feature6.svg"
-            >
-            </FeatureCard>
-
-          </div>
-        </div>
-      </section>
-
-      {/* Call to Action */}
-      <section className="py-16 text-center">
-        <div className="container mx-auto px-4">
-          <h2 className="mb-6 text-4xl font-bold">¿Listo para transformar tu aula?</h2>
-          <p className="mx-auto mb-8 max-w-2xl text-xl text-blue-950">
-            Únete a miles de educadores que están revolucionando la forma de
-            enseñar con Classcraft.
-          </p>
-          <Link
-          href="/auth/register"
-          className="inline-block transform rounded-lg bg-yellow-500 px-8 py-4 text-xl font-bold text-blue-900 transition duration-300 hover:bg-yellow-400 hover:shadow-lg"
-          >
-            Comienza tu Aventura
-          </Link>
         </div>
       </section>
 

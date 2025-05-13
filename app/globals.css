@@ -1,9 +1,17 @@
 @import "tailwindcss";
 
+:root {
+  --font-primary: var(--font-cinzel);
+}
+
+body {
+  font-family: var(--font-primary), Arial, sans-serif;
+}
+
 /* :root {
   --background: #ffffff;
   --foreground: #171717;
-}
+} 
 
 @theme inline {
   --color-background: var(--background);
