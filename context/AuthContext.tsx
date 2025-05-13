@@ -1,9 +1,5 @@
 import { createContext, useContext, useState, ReactNode } from "react";
-
-interface AuthContextProps {
-  token: string | null;
-  setToken: (token: string | null) => void;
-}
+import { AuthContextProps } from "@/types/types";
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
@@ -15,7 +11,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
+
+
+  
 }
+
+
 
 export function useAuth() {
   const context = useContext(AuthContext);

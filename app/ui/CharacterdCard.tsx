@@ -1,9 +1,4 @@
-interface CharacterCardProps {
-  title: string;
-  description: string;
-  imageUrl: string;
-  features: string[];
-}
+import { CharacterCardProps } from "@/types/types";
 
 export default function CharacterCard({
   title,

@@ -11,7 +11,12 @@ const apiClient = axios.create({
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error("API Error:", error.response?.data || error.message);
+    if (error.response?.status === 401) {
+      // El token ha expirado o no es válido
+      console.error("Token expirado o no válido");
+      localStorage.removeItem("token"); // Elimina el token del almacenamiento local
+      window.location.href = "/auth/login"; // Redirige al inicio de sesión
+    }
     return Promise.reject(error);
   }
 );

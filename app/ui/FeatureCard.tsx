@@ -1,10 +1,5 @@
+import { FeatureCardProps } from "@/types/types";
 import Image from "next/image";
-
-interface FeatureCardProps {
-  title: string;
-  description: string;
-  iconSrc: string;
-}
 
 export default function FeatureCard({
   title,

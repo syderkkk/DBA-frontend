@@ -1,12 +1,12 @@
 'use client';
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { login } from "../../services/authService";
+import { login } from "../../../services/authService";
 import { AxiosError } from "axios";
 
 export default function Page() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("italo@gmail.com");
+  const [password, setPassword] = useState("italo322");
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
