@@ -5,12 +5,12 @@ interface CharacterCardProps {
   features: string[];
 }
 
-const CharacterCard = ({
+export default function CharacterCard({
   title,
   description,
   imageUrl,
   features,
-}: CharacterCardProps) => {
+}: CharacterCardProps) {
   return (
     <div
       className={`flex flex-col items-center rounded-lg bg-gradient-to-b from-red-900/50 to-red-950/50 p-6 text-center shadow-lg transition duration-300 hover:transform hover:shadow-xl hover:ring`}
@@ -26,11 +26,9 @@ const CharacterCard = ({
       <p className="mb-4 text-blue-100">{description}</p>
       <ul>
         {features.map((feature, index) => (
-            <li key={index}>• {feature} </li>
+          <li key={index}>• {feature} </li>
         ))}
       </ul>
     </div>
   );
-};
-
-export default CharacterCard;
+}
