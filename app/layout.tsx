@@ -20,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body
-        className={`${cinzel.variable} antia`}
+        className={`${cinzel.variable} antialiased`}
         /* className={`${geistSans.variable} ${geistMono.variable} antialiased`} */
       >
         {children}

@@ -1,16 +1,20 @@
-'use client';
+export default async function Page() {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  return (
+    <main>
+      <h1 className="mb-4 text-xl md:text-2xl">Dashboard</h1>
+    </main>
+  );
+}
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { fetchUserData } from "../../services/userService";
-import { User } from "@/types/types"; 
-
-export default function Page() {
+/* export default function Page() {
+  
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
+    
     const token = localStorage.getItem("token");
 
     if (!token) {
@@ -52,4 +56,4 @@ export default function Page() {
       )}
     </div>
   );
-}
+} */

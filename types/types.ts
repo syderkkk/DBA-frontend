@@ -34,6 +34,8 @@ export interface UserContextProps {
 }
 
 export interface AuthContextProps {
+  user: User | null;
   token: string | null;
-  setToken: (token: string | null) => void;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => void;
 }

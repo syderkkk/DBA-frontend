@@ -18,7 +18,7 @@ export default function Page() {
       const data = await login({ email, password });
       console.log("Login successful:", data);
       localStorage.setItem("token", data.token); // Guarda el token en localStorage
-      router.push("/dashboard"); // Redirige al dashboard
+      router.push("/home"); // Redirige al dashboard
     } catch (err: unknown) {
       if (err instanceof AxiosError) {
         setError(err.response?.data?.message || "Error al iniciar sesión");
