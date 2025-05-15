@@ -8,7 +8,9 @@ body {
   font-family: var(--font-primary), Arial, sans-serif;
   overflow-x: hidden;
 }
-
+html {
+  scroll-behavior: smooth;
+}
 /* :root {
   --background: #ffffff;
   --foreground: #171717;
