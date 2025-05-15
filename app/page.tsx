@@ -8,57 +8,58 @@ import Image from "next/image";
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col">
-      <NavBar></NavBar>
-      {/* Hero Section  */}
-      <section className="relative overflow-hidden min-h-[60vh] py-20 md:py-32">
+    <main className="flex min-h-screen flex-col max-w-full overflow-x-hidden">
+      <NavBar />
+      {/* Hero Section */}
+      <section className="relative flex items-center justify-center w-full min-h-[50vh] sm:min-h-[70vh] lg:min-h-[90vh] overflow-hidden">
+        {/* Fondo solo en la sección */}
         <div className="absolute inset-0 z-0">
-          {/* Fondo con patrón de fantasía */}
-          <div className="relative h-full w-full">
-            <Image
-              src={"/m-bg.png"}
-              alt="/m-bg."
-              fill
-              className="object-cover"
-              priority
-            ></Image>
-          </div>
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent"></div>
+          <Image
+            src={"/background.png"}
+            alt="Fondo"
+            fill
+            className="object-cover"
+            priority
+            sizes="100vw"
+          />
+          {/* Gradiente blanco solo en la parte baja */}
+          <div className="absolute bottom-0 left-0 w-full h-[10%] pointer-events-none bg-gradient-to-t from-white/95 via-white/60 to-transparent" />
         </div>
 
-        <div className="container relative z-10 mx-auto flex flex-col items-center px-4 text-center">
-          <h1 className="mb-6 text-5xl font-extrabold tracking-tight text-yellow-400 drop-shadow-lg sm:text-7xl">
-            <span className="block text-yellow-400">{/* ClassCraft */}</span>
-            <span className="mt-2 block text-3xl font-bold text-blue-200 sm:text-5xl">
-              {/* Transforma tu aula en aventura */}
+        {/* Contenido centrado y más arriba */}
+        <div className="relative z-10 flex flex-col items-center text-center w-full px-2 pb-10 pt-8 sm:pt-16">
+          <h1 className="mb-4 font-extrabold tracking-tight drop-shadow-lg text-sm sm:text-xl lg:text-2xl">
+            <span className="inline-block px-5 py-2 rounded-full bg-black/70 text-white shadow-lg backdrop-blur-sm">
+              Transforma tu aula en aventura
             </span>
           </h1>
+          <Link
+            href="/auth/register"
+            className="mt-4 inline-block rounded-full bg-green-500 px-6 py-2 text-sm sm:px-10 sm:py-3 sm:text-base text-white transition duration-300 hover:bg-green-700 hover:shadow-lg"
+          >
+            Empieza ahora. ¡Es Gratis!
+          </Link>
         </div>
       </section>
 
       {/* Call to Action */}
-      <section className="py-12 text-center">
-        <div className="container mx-auto px-4">
-          <h2 className="mb-6 text-3xl font-bold">
+      <section className="py-8 sm:py-12 text-center">
+        <div className="container mx-auto px-2 sm:px-4">
+          <h2 className="mb-4 sm:mb-6 text-2xl sm:text-3xl font-bold">
             Haz tus clases inolvidables
           </h2>
-          <Link
-            href="/auth/register"
-            className="inline-block transform rounded-full bg-green-500 px-10 py-4 text-lg text-white transition duration-300 hover:bg-green-700 hover:shadow-lg"
-          >
-            Empieza ahora. ¡Es Gratis!
-          </Link>
-          <div className="flex justify-center items-center my-8">
+          <div className="flex justify-center items-center my-6 sm:my-8">
             <Image
               src="/Claasscraft.jpg"
               alt="Classcraft"
-              width={300}
-              height={300}
-              className="rounded-lg shadow-lg"
-            ></Image>
+              width={220}
+              height={220}
+              className="rounded-lg shadow-lg max-w-full h-auto"
+              style={{ maxWidth: 220, width: "100%" }}
+            />
           </div>
-          <div className="mt-8">
-            <p className="mt-4 text-2xl text-gray-700 text-center max-w-2xl mx-auto">
+          <div className="mt-6 sm:mt-8">
+            <p className="mt-4 text-lg sm:text-2xl text-gray-700 text-center max-w-md sm:max-w-2xl mx-auto">
               Transforma cualquier clase en un juego de rol que fomenta una
               colaboración más estrecha entre los estudiantes y alienta un mejor
               comportamiento.
@@ -68,71 +69,70 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <h2 className="mb-12 text-center text-4xl">
-            <strong>Herramientas poderosas</strong> para <strong>impulsar en compromiso</strong>
-            <div className="flex justify-center items-center my-8">
-            <Image
-              src="/Claasscraft.jpg"
-              alt="Classcraft"
-              width={300}
-              height={300}
-              className="rounded-lg shadow-lg"
-            ></Image>
-          </div>
+      <section className="py-10 sm:py-16">
+        <div className="container mx-auto px-2 sm:px-4">
+          <h2 className="mb-8 sm:mb-12 text-center text-2xl sm:text-4xl">
+            <strong>Herramientas poderosas</strong> para{" "}
+            <strong>impulsar el compromiso</strong>
+            <div className="flex justify-center items-center my-6 sm:my-8">
+              <Image
+                src="/Claasscraft.jpg"
+                alt="Classcraft"
+                width={220}
+                height={220}
+                className="rounded-lg shadow-lg max-w-full h-auto"
+                style={{ maxWidth: 220, width: "100%" }}
+              />
+            </div>
           </h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 justify-center items-center max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 justify-center items-center max-w-full sm:max-w-4xl mx-auto">
             {/* Característica 1 */}
             <FeatureCard
               title="Mejora el Ambiente en la Clase"
               description="Incita a los alumnos con riesgos reales y recompensas en clase y los observa volviéndose mejores alumnos conforme vayan progresando en el juego"
               iconSrc="/feature/feature1.svg"
-            ></FeatureCard>
-
+            />
             {/* Característica 2 */}
             <FeatureCard
               title="Equipos Colaborativos"
               description="Los estudiantes trabajan en equipos, donde cada miembro aporta sus habilidades únicas para enfrentar desafíos académicos juntos."
               iconSrc="/feature/feature2.svg"
-            ></FeatureCard>
-
+            />
             {/* Característica 3 */}
             <FeatureCard
-              title="Poderes y Habilidades
-"
+              title="Poderes y Habilidades"
               description="Cada clase de personaje tiene poderes únicos que reflejan diferentes estilos de aprendizaje y fortalezas académicas."
               iconSrc="/feature/feature3.svg"
-            ></FeatureCard>
+            />
             {/* Característica 4 */}
             <FeatureCard
               title="Eventos y Desafíos"
               description="Desafíos épicos, batallas contra jefes y eventos especiales transforman exámenes y proyectos en emocionantes aventuras."
               iconSrc="/feature/feature4.svg"
-            ></FeatureCard>
+            />
             {/* Característica 5 */}
             <FeatureCard
               title="Dashboard para Profesores"
               description="Potentes herramientas para que los profesores monitoreen el progreso, asignen recompensas y gestionen el comportamiento de forma divertida."
               iconSrc="/feature/feature5.svg"
-            ></FeatureCard>
+            />
             {/* Característica 6 */}
             <FeatureCard
               title="Tienda de Equipamiento"
               description="Los estudiantes pueden gastar oro ganado en personalizar sus personajes con armas, armaduras y accesorios que ofrecen bonificaciones."
               iconSrc="/feature/feature6.svg"
-            ></FeatureCard>
+            />
           </div>
         </div>
       </section>
 
       {/* Character Class Section */}
-      <section className="bg-blue-900/50 py-16">
-        <div className="container mx-auto px-4">
-          <h2 className="mb-12 text-center text-4xl font-bold text-white">
+      <section className="bg-blue-900/50 py-10 sm:py-16">
+        <div className="container mx-auto px-2 sm:px-4">
+          <h2 className="mb-8 sm:mb-12 text-center text-2xl sm:text-4xl font-bold text-white">
             Elige tu Clase de Personaje
           </h2>
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-3">
             {/* Guerrero */}
             <CharacterCard
               title="Guerrero"
@@ -144,7 +144,6 @@ export default function Home() {
                 "Especialistas en perseverencia",
               ]}
             />
-
             {/* Mago */}
             <CharacterCard
               title="Mago"
@@ -156,7 +155,6 @@ export default function Home() {
                 "Especialistas en perseverencia",
               ]}
             />
-
             {/* Sanador */}
             <CharacterCard
               title="Sanador"
@@ -173,13 +171,13 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-blue-950 py-8">
-        <div className="container mx-auto px-4 text-center text-blue-400">
+      <footer className="bg-blue-950 py-6 sm:py-8">
+        <div className="container mx-auto px-2 sm:px-4 text-center text-blue-400">
           <p>
             &copy; {new Date().getFullYear()} Classcraft. Todos los derechos
             reservados.
           </p>
-          <p className="mt-2 text-sm">
+          <p className="mt-2 text-xs sm:text-sm">
             Este es un proyecto educativo y no está afiliado con el Classcraft
             original.
           </p>
