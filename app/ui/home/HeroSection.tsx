@@ -28,7 +28,7 @@ export default function HeroSection() {
           </span>
         </h1>
         <Link
-          href="/auth/register"
+          href="/auth/select-role"
           className="mt-4 inline-block rounded-full bg-green-500 px-6 py-2 text-sm sm:px-10 sm:py-3 sm:text-base text-white transition duration-300 hover:bg-green-700 hover:shadow-lg"
         >
           ¡Comienza Gratis Ahora!

@@ -16,7 +16,7 @@ export default function Page() {
           <Image src="/feature/feature1.svg" alt="Logo" width={64} height={64} />
         </div>
         <h1 className="text-lg sm:text-xl font-bold text-center mb-4">
-          Inscripción de {role === "teacher" ? "maestro" : "alumno"}
+          Inscripción de {role === "teacher" ? "maestro" : "student"}
         </h1>
         <button className="w-full bg-gray-100 text-gray-700 py-0.5 rounded-lg shadow-md flex items-center justify-center mb-3 hover:bg-gray-200">
           <Image src="/path-to-google-icon.png" alt="Google" width={20} height={20} className="mr-2" />

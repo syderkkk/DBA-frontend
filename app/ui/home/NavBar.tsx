@@ -99,16 +99,16 @@ export default function NavBar() {
         {/* Buttons (desktop) */}
         <div className="hidden md:flex space-x-2">
           <Link
-            href="/auth/select-role"
-            className="bg-green-500 text-white px-3 py-1.5 rounded hover:bg-green-600 transition duration-300 text-sm"
-          >
-            Inscríbete
-          </Link>
-          <Link
             href="/auth/login"
             className="border border-gray-400 text-gray-600 px-3 py-1.5 rounded hover:bg-gray-100 transition duration-300 text-sm"
           >
-            Regístrate
+            Iniciar Sesión
+          </Link>
+          <Link
+            href="/auth/select-role"
+            className="bg-green-500 text-white px-3 py-1.5 rounded hover:bg-green-600 transition duration-300 text-sm"
+          >
+            Registrate
           </Link>
         </div>
       </div>
