@@ -7,20 +7,7 @@ import { AxiosError } from "axios";
 import Link from "next/link";
 import { FaGoogle, FaRegStar } from "react-icons/fa";
 import { motion } from "framer-motion";
-
-const fadeInUp = {
-  hidden: { opacity: 0, y: 24 },
-  visible: (i = 1) => ({
-    opacity: 1,
-    y: 0,
-    transition: {
-      delay: i * 0.08,
-      duration: 0.5,
-      type: "spring",
-      stiffness: 60,
-    },
-  }),
-};
+import { fadeInUp } from "@/types/types";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("italo@gmail.com");
