@@ -1,9 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { login } from "../../../services/authService";
-import { AxiosError } from "axios";
 import Link from "next/link";
 import { FaGoogle, FaRegStar } from "react-icons/fa";
 import { motion } from "framer-motion";
@@ -12,25 +9,6 @@ import { fadeInUp } from "@/types/types";
 export default function LoginForm() {
   const [email, setEmail] = useState("italo@gmail.com");
   const [password, setPassword] = useState("italo322");
-  const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-
-    try {
-      const data = await login({ email, password });
-      localStorage.setItem("token", data.token);
-      router.push("/home");
-    } catch (err: unknown) {
-      if (err instanceof AxiosError) {
-        setError(err.response?.data?.message || "Error al iniciar sesión");
-      } else {
-        setError("Ocurrió un error inesperado");
-      }
-    }
-  };
 
   return (
     <div
@@ -83,7 +61,7 @@ export default function LoginForm() {
           <span className="px-2 text-cyan-200/80">o</span>
           <hr className="w-full border-cyan-300/30" />
         </motion.div>
-        {error && (
+        {/* {error && (
           <motion.p
             custom={4}
             variants={fadeInUp}
@@ -91,11 +69,11 @@ export default function LoginForm() {
           >
             {error}
           </motion.p>
-        )}
+        )} */}
         <motion.form
           custom={5}
           variants={fadeInUp}
-          onSubmit={handleSubmit}
+          /* onSubmit={} */
           className="z-10 relative"
         >
           <div className="mb-2">
@@ -118,7 +96,7 @@ export default function LoginForm() {
           </div>
           <button
             type="submit"
-            className="w-full bg-cyan-400 text-black font-bold py-2 rounded-lg hover:bg-cyan-300 transition"
+            className="cursor-pointer w-full bg-cyan-400 text-black font-bold py-2 rounded-lg hover:bg-cyan-300 transition"
           >
             Iniciar Sesión
           </button>
@@ -127,7 +105,7 @@ export default function LoginForm() {
             variants={fadeInUp}
             type="button"
             onClick={() => (window.location.href = "/")}
-            className="w-full mt-2 bg-transparent border border-cyan-300/40 text-cyan-200 font-bold py-2 rounded-lg hover:bg-cyan-300/10 transition"
+            className="cursor-pointer w-full mt-2 bg-transparent border border-cyan-300/40 text-cyan-200 font-bold py-2 rounded-lg hover:bg-cyan-300/10 transition"
           >
             Cancelar y volver al inicio
           </motion.button>
