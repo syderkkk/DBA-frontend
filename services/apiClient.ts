@@ -7,16 +7,21 @@ const apiClient = axios.create({
   },
 });
 
-apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      console.error("Token expirado o no válido");
-      localStorage.removeItem("token");
-      window.location.href = "/auth/login";
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    const publicRoutes = ["/login", "/register"];
+    // Usar ?. para evitar el error de undefined
+    if (
+      token &&
+      config.url &&
+      !publicRoutes.some((route) => config.url?.endsWith(route))
+    ) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
-    return Promise.reject(error);
-  }
+    return config;
+  },
+  (error) => Promise.reject(error)
 );
 
 export default apiClient;

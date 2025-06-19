@@ -5,10 +5,40 @@ import Link from "next/link";
 import { FaGoogle, FaRegStar } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { fadeInUp } from "@/types/types";
+import { getUser, login } from "@/services/authService"; // Asegúrate de importar tu servicio
+import { useRouter } from "next/navigation";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("italo@gmail.com");
-  const [password, setPassword] = useState("italo322");
+  const [password, setPassword] = useState("a322");
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    try {
+      const response = await login({ email, password });
+      const token = response.data.token;
+      localStorage.setItem("token", token);
+      console.log("TOKEN JWT:", token);
+
+      // Obtener el usuario y su rol
+      const userResponse = await getUser();
+      const role = userResponse.data.role;
+
+      if (role === "student") {
+        router.push("/dashboard/student");
+      } else if (role === "professor") {
+        router.push("/dashboard/professor");
+      } else {
+        router.push("/dashboard");
+      }
+    } catch (err: unknown) {
+      console.error(err);
+      setError("Credenciales incorrectas");
+    }
+  };
 
   return (
     <div
@@ -61,7 +91,7 @@ export default function LoginForm() {
           <span className="px-2 text-cyan-200/80">o</span>
           <hr className="w-full border-cyan-300/30" />
         </motion.div>
-        {/* {error && (
+        {error && (
           <motion.p
             custom={4}
             variants={fadeInUp}
@@ -69,11 +99,11 @@ export default function LoginForm() {
           >
             {error}
           </motion.p>
-        )} */}
+        )}
         <motion.form
           custom={5}
           variants={fadeInUp}
-          /* onSubmit={} */
+          onSubmit={handleSubmit}
           className="z-10 relative"
         >
           <div className="mb-2">

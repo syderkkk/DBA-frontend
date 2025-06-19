@@ -1,26 +1,27 @@
+import apiClient from "./apiClient";
+
+export interface ClassroomData {
+  name: string;
+  description?: string;
+  // Add other classroom properties as needed
+}
+
+export const createClassroom = (data: ClassroomData) => apiClient.post("/classroom", data);
+export const getClassroomById = (id: string) => apiClient.get(`/classroom/${id}`);
+export const updateClassroomById = (id: string, data: ClassroomData) => apiClient.patch(`/classroom/${id}`, data);
+export const deleteClassroomById = (id: string) => apiClient.delete(`/classroom/${id}`);
+
+export const addUserToClassroom = (id: string, data: { userId: string }) => apiClient.post(`/classroom/${id}/add-user`, data);
+export const removeUserFromClassroom = (id: string, data: { userId: string }) => apiClient.post(`/classroom/${id}/remove-user`, data);
+export const getUsersInClassroom = (id: string) => apiClient.get(`/classroom/${id}/users`);
 
 
 
-// createClassroom
+// Obtener todas las aulas del profesor
+export const getClassroomsByProfessor = () => apiClient.get("/classroom");
 
+// Unirse a un aula por código 
+export const joinClassroomByCode = (join_code: string) => apiClient.post("/classroom/join", { join_code });
 
-// getClassroom
-
-
-// updateClassroom
-
-
-// deleteClassroom
-
-
-// addUserToClassroom
-
-
-// removeUserFromClassroom
-
-
-// getUsersInClassroom
-
-
-
-// createCharacter
+// Obtener las aulas del estudiante
+export const getMyClassrooms = () => apiClient.get("/my-classrooms");
