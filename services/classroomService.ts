@@ -1,8 +1,11 @@
 import apiClient from "./apiClient";
 
 export interface ClassroomData {
-  name: string;
+  title: string;
   description?: string;
+  max_capacity: number;
+  start_date?: string;
+  expiration_date?: string;
   // Add other classroom properties as needed
 }
 
