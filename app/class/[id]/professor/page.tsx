@@ -13,7 +13,6 @@ import {
   FaPlus,
   FaMinus,
   FaUsers,
-  FaHome,
 } from "react-icons/fa";
 
 import { createQuestion } from "@/services/questionService";
