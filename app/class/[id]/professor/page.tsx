@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import {
   FaQrcode,
@@ -15,7 +15,14 @@ import {
   FaUsers,
 } from "react-icons/fa";
 
-import { createQuestion } from "@/services/questionService";
+import {
+  createQuestion,
+  getQuestionsByClassroom,
+  closeQuestion,
+} from "@/services/questionService";
+import { getClassroomById } from "@/services/classroomService";
+import { useRouter, useParams } from "next/navigation";
+
 // Datos de ejemplo
 const estudiantesMock = [
   {
@@ -44,11 +51,16 @@ const estudiantesMock = [
   },
 ];
 
-import { useEffect } from "react";
-import { getClassroomById } from "@/services/classroomService";
-import { useParams } from "next/navigation";
+// Interface para la pregunta activa (actualizada con ID)
+interface PreguntaActiva {
+  id: number;
+  pregunta: string;
+  opciones: string[];
+  correcta: number;
+  timestamp: number;
+}
 
-// Sidebar igual al dashboard
+// Sidebar
 function Sidebar({
   girarRuleta,
   girando,
@@ -56,6 +68,7 @@ function Sidebar({
   setShowModal,
   setMostrarQR,
   preguntasEnviadas,
+  preguntaActiva,
 }: {
   girarRuleta: () => void;
   girando: boolean;
@@ -63,11 +76,18 @@ function Sidebar({
   setShowModal: (b: boolean) => void;
   setMostrarQR: (b: boolean) => void;
   preguntasEnviadas: string[];
+  preguntaActiva: PreguntaActiva | null;
 }) {
+  const router = useRouter();
+
   return (
     <aside className="fixed top-0 left-0 h-full w-64 bg-white text-black flex flex-col z-40 shadow-[0_0_32px_0_rgba(0,0,0,0.18)] border-r border-gray-200">
       <div className="flex items-center gap-2 px-6 py-7 border-b border-gray-200">
-        <span className="text-2xl font-bold tracking-tight font-sans select-none text-black drop-shadow">
+        <span
+          className="text-2xl font-bold tracking-tight font-sans select-none text-black drop-shadow cursor-pointer hover:text-green-600 transition-colors duration-200"
+          onClick={() => router.push("/dashboard/professor")}
+          title="Ir al Dashboard"
+        >
           CLASSCRAFT
         </span>
       </div>
@@ -88,11 +108,16 @@ function Sidebar({
           </li>
           <li>
             <button
-              className="cursor-pointer flex items-center gap-3 px-5 py-2 rounded-full bg-black/70 text-white shadow-lg backdrop-blur-sm font-semibold transition hover:bg-black/90 w-full"
+              className={`cursor-pointer flex items-center gap-3 px-5 py-2 rounded-full shadow-lg backdrop-blur-sm font-semibold transition w-full ${
+                preguntaActiva
+                  ? "bg-blue-600 text-white hover:bg-blue-700"
+                  : "bg-black/70 text-white hover:bg-black/90"
+              }`}
               onClick={() => setShowModal(true)}
+              disabled={!!preguntaActiva}
             >
-              <FaQuestionCircle className="text-green-500 text-xl" /> Crear
-              pregunta tipo quiz
+              <FaQuestionCircle className="text-green-500 text-xl" />
+              {preguntaActiva ? "Pregunta Activa" : "Crear pregunta tipo quiz"}
             </button>
           </li>
           <li>
@@ -104,28 +129,48 @@ function Sidebar({
             </button>
           </li>
           <li>
-            <button className="cursor-pointer flex items-center gap-3 px-5 py-2 rounded-full bg-black/70 text-white shadow-lg backdrop-blur-sm font-semibold transition hover:bg-black/90 w-full">
+            <button
+              className="cursor-pointer flex items-center gap-3 px-5 py-2 rounded-full bg-black/70 text-white shadow-lg backdrop-blur-sm font-semibold transition hover:bg-black/90 w-full"
+              onClick={() => router.push("/dashboard/professor")}
+            >
               <FaSignOutAlt className="text-green-500 text-xl" /> Regresar al
               inicio
             </button>
           </li>
         </ul>
+
         <div className="mt-10 mb-2 px-3 text-xs text-black uppercase tracking-wider font-bold">
-          Preguntas recientes
+          {preguntaActiva ? "Pregunta en Curso" : "Preguntas recientes"}
         </div>
-        <ul className="space-y-1 max-h-32 overflow-y-auto pr-2">
-          {preguntasEnviadas.slice(0, 3).map((p, i) => (
-            <li
-              key={i}
-              className="bg-green-50 rounded px-2 py-1 text-green-800 text-sm"
-            >
-              {p}
-            </li>
-          ))}
-          {preguntasEnviadas.length === 0 && (
-            <li className="text-gray-400 text-sm text-center">Sin preguntas</li>
-          )}
-        </ul>
+
+        {preguntaActiva ? (
+          <div className="px-3 py-2 bg-blue-50 rounded-lg mx-2 border border-blue-200">
+            <p className="text-xs text-blue-800 font-medium">
+              {preguntaActiva.pregunta.substring(0, 40)}
+              {preguntaActiva.pregunta.length > 40 ? "..." : ""}
+            </p>
+            <p className="text-xs text-blue-600 mt-1">
+              {preguntaActiva.opciones.length} opciones • ID:{" "}
+              {preguntaActiva.id}
+            </p>
+          </div>
+        ) : (
+          <ul className="space-y-1 max-h-32 overflow-y-auto pr-2">
+            {preguntasEnviadas.slice(0, 3).map((p: string, i: number) => (
+              <li
+                key={i}
+                className="bg-green-50 rounded px-2 py-1 text-green-800 text-sm"
+              >
+                {p}
+              </li>
+            ))}
+            {preguntasEnviadas.length === 0 && (
+              <li className="text-gray-400 text-sm text-center">
+                Sin preguntas
+              </li>
+            )}
+          </ul>
+        )}
       </nav>
     </aside>
   );
@@ -133,7 +178,6 @@ function Sidebar({
 
 export default function Page() {
   const [codigoClase, setCodigoClase] = useState<string>("");
-
   const [estudiantes, setEstudiantes] = useState(estudiantesMock);
   const [mostrarQR, setMostrarQR] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -142,11 +186,19 @@ export default function Page() {
   const [girando, setGirando] = useState(false);
   const [busqueda, setBusqueda] = useState("");
 
-  // Modal para pregunta tipo quiz (mínimo 2, máximo 4 opciones)
+  // Modal para pregunta tipo quiz
   const [showModal, setShowModal] = useState(false);
   const [pregunta, setPregunta] = useState("");
   const [opciones, setOpciones] = useState(["", ""]);
   const [correctOption, setCorrectOption] = useState<number | null>(null);
+
+  // ACTUALIZADO: Estado para la pregunta activa con ID
+  const [preguntaActiva, setPreguntaActiva] = useState<PreguntaActiva | null>(
+    null
+  );
+
+  const params = useParams();
+  const classId = params?.id as string;
 
   // Filtrado de estudiantes por nombre
   const estudiantesFiltrados = useMemo(
@@ -156,6 +208,64 @@ export default function Page() {
       ),
     [estudiantes, busqueda]
   );
+
+  // ACTUALIZADO: useEffect para cargar datos de la clase y preguntas existentes
+  useEffect(() => {
+    if (!classId) return;
+
+    // Cargar información de la clase
+    getClassroomById(classId)
+      .then((res) => {
+        setCodigoClase(res.data.join_code);
+      })
+      .catch(() => {
+        setCodigoClase("SIN-CODIGO");
+      });
+
+    // NUEVO: Cargar preguntas existentes
+    getQuestionsByClassroom(classId)
+      .then((res) => {
+        const preguntas = res.data;
+        console.log("Preguntas existentes:", preguntas);
+
+        // Agregar preguntas existentes al historial
+        if (preguntas.length > 0) {
+          const preguntasHistorial = preguntas.map(
+            (p: any) =>
+              `${p.question.substring(0, 40)}${
+                p.question.length > 40 ? "..." : ""
+              }`
+          );
+          setPreguntasEnviadas(preguntasHistorial);
+
+          // Opcional: Si hay una pregunta muy reciente (menos de 10 minutos), mostrarla como activa
+          const ultimaPregunta = preguntas[preguntas.length - 1];
+          const tiempoCreacion = new Date(ultimaPregunta.created_at).getTime();
+          const tiempoActual = Date.now();
+          const diferenciaTiempo = tiempoActual - tiempoCreacion;
+          const diezMinutos = 10 * 60 * 1000;
+
+          if (diferenciaTiempo < diezMinutos) {
+            setPreguntaActiva({
+              id: ultimaPregunta.id,
+              pregunta: ultimaPregunta.question,
+              opciones: [
+                ultimaPregunta.option_1,
+                ultimaPregunta.option_2,
+                ultimaPregunta.option_3,
+                ultimaPregunta.option_4,
+              ].filter((op) => op !== null && op !== ""),
+              correcta:
+                parseInt(ultimaPregunta.correct_option.split("_")[1]) - 1,
+              timestamp: tiempoCreacion,
+            });
+          }
+        }
+      })
+      .catch((err) => {
+        console.log("No hay preguntas o error:", err);
+      });
+  }, [classId]);
 
   // Ruleta animada segura
   const girarRuleta = () => {
@@ -182,9 +292,22 @@ export default function Page() {
     if (seleccionado === id) setSeleccionado(null);
   };
 
-  // Enviar pregunta tipo quiz (mínimo 2, máximo 4 opciones)
-  const enviarPreguntaQuiz = async () => {
-    // Validación previa (ya la tienes)
+  // NUEVO: Función para cerrar la pregunta activa
+  const cerrarPreguntaActiva = async (): Promise<void> => {
+    if (!preguntaActiva) return;
+
+    try {
+      await closeQuestion(preguntaActiva.id.toString());
+      console.log("✅ Pregunta cerrada exitosamente");
+      setPreguntaActiva(null);
+    } catch (error) {
+      console.error("💥 Error al cerrar pregunta:", error);
+      alert("Error al cerrar la pregunta");
+    }
+  };
+
+  // ACTUALIZADO: Enviar pregunta tipo quiz que extrae del backend
+  const enviarPreguntaQuiz = async (): Promise<void> => {
     if (
       !pregunta.trim() ||
       opciones.length < 2 ||
@@ -195,7 +318,6 @@ export default function Page() {
       return;
     }
 
-    // Construir el payload según el backend
     const payload: any = {
       question: pregunta,
       option_1: opciones[0],
@@ -206,25 +328,56 @@ export default function Page() {
     if (opciones[3]) payload.option_4 = opciones[3];
 
     try {
-      await createQuestion(classId, payload);
-      // Limpia y cierra modal, etc.
+      // 1. Crear la pregunta en el backend
+      console.log("📤 Creando pregunta en backend...");
+      const response = await createQuestion(classId, payload);
+      console.log("✅ Pregunta creada:", response);
+
+      // 2. Obtener las preguntas actualizadas del backend
+      console.log("📤 Obteniendo preguntas del backend...");
+      const preguntasResponse = await getQuestionsByClassroom(classId);
+      const preguntas = preguntasResponse.data;
+      console.log("✅ Preguntas obtenidas:", preguntas);
+
+      // 3. Obtener la pregunta más reciente (la que acabamos de crear)
+      const preguntaMasReciente = preguntas[preguntas.length - 1];
+      console.log("🎯 Pregunta más reciente:", preguntaMasReciente);
+
+      // 4. Establecer como pregunta activa usando datos del backend
+      setPreguntaActiva({
+        id: preguntaMasReciente.id,
+        pregunta: preguntaMasReciente.question,
+        opciones: [
+          preguntaMasReciente.option_1,
+          preguntaMasReciente.option_2,
+          preguntaMasReciente.option_3,
+          preguntaMasReciente.option_4,
+        ].filter((op) => op !== null && op !== ""), // Filtrar opciones vacías
+        correcta:
+          parseInt(preguntaMasReciente.correct_option.split("_")[1]) - 1, // Convertir "option_1" a 0
+        timestamp: Date.now(),
+      });
+
+      console.log("✅ Pregunta activa establecida desde backend");
+
+      // Agregar a preguntas recientes
       setPreguntasEnviadas([
-        `Pregunta: ${pregunta} | Opciones: ${opciones.join(
-          " / "
-        )} | Correcta: ${correctOption + 1}`,
+        `${pregunta.substring(0, 40)}${pregunta.length > 40 ? "..." : ""}`,
         ...preguntasEnviadas,
       ]);
+
+      // Limpiar modal
       setPregunta("");
       setOpciones(["", ""]);
       setCorrectOption(null);
       setShowModal(false);
     } catch (err) {
-      console.error("Error al crear la pregunta:", err);
+      console.error("💥 Error al crear la pregunta:", err);
       alert("Error al crear la pregunta");
     }
   };
 
-  // Eliminar estudiante seleccionado (por responder bien o mal)
+  // Eliminar estudiante seleccionado
   const limpiarSeleccionado = () => {
     setSeleccionado(null);
   };
@@ -233,6 +386,7 @@ export default function Page() {
   const agregarOpcion = () => {
     if (opciones.length < 4) setOpciones([...opciones, ""]);
   };
+
   const quitarOpcion = (idx: number) => {
     if (opciones.length <= 2) return;
     const nuevasOpciones = opciones.filter((_, i) => i !== idx);
@@ -242,26 +396,12 @@ export default function Page() {
       setCorrectOption(correctOption - 1);
   };
 
-  const params = useParams();
-  const classId = params?.id as string;
-
-  useEffect(() => {
-    if (!classId) return;
-    getClassroomById(classId)
-      .then((res) => {
-        setCodigoClase(res.data.join_code);
-      })
-      .catch(() => {
-        setCodigoClase("SIN-CODIGO");
-      });
-  }, [classId]);
-
   // Encuentra el estudiante seleccionado
   const estudianteSeleccionado = estudiantes.find((e) => e.id === seleccionado);
 
   return (
     <div className="relative min-h-screen">
-      {/* Fondo con imagen y overlay igual al dashboard */}
+      {/* Fondo con imagen y overlay */}
       <div
         className="fixed inset-0 z-0 bg-cover bg-center"
         style={{
@@ -270,6 +410,7 @@ export default function Page() {
         aria-hidden="true"
       />
       <div className="fixed inset-0 z-10 bg-gradient-to-b from-white/60 via-white/40 to-white/80 pointer-events-none" />
+
       <div className="relative z-20 flex min-h-screen">
         {/* Sidebar */}
         <Sidebar
@@ -279,6 +420,7 @@ export default function Page() {
           setShowModal={setShowModal}
           setMostrarQR={setMostrarQR}
           preguntasEnviadas={preguntasEnviadas}
+          preguntaActiva={preguntaActiva}
         />
 
         {/* Contenido principal */}
@@ -370,7 +512,7 @@ export default function Page() {
                         />
                         {opciones.length > 2 && (
                           <button
-                            className="bg-red-500 hover:bg-red-600 text-white rounded-full p-2 transition"
+                            className="cursor-pointer bg-red-500 hover:bg-red-600 text-white rounded-full p-2 transition"
                             onClick={() => quitarOpcion(idx)}
                             type="button"
                             title="Quitar opción"
@@ -381,7 +523,7 @@ export default function Page() {
                       </div>
                     ))}
                     <button
-                      className="flex items-center gap-2 mt-2 px-3 py-1 bg-green-200 hover:bg-green-300 text-green-900 rounded-lg font-bold shadow transition w-fit"
+                      className="cursor-pointer flex items-center gap-2 mt-2 px-3 py-1 bg-green-200 hover:bg-green-300 text-green-900 rounded-lg font-bold shadow transition w-fit"
                       onClick={agregarOpcion}
                       type="button"
                       disabled={opciones.length >= 4}
@@ -391,7 +533,7 @@ export default function Page() {
                   </div>
                   <div className="flex gap-3 mt-2">
                     <button
-                      className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-bold shadow transition"
+                      className="cursor-pointer bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-bold shadow transition"
                       onClick={enviarPreguntaQuiz}
                       disabled={
                         !pregunta.trim() ||
@@ -404,7 +546,7 @@ export default function Page() {
                       Enviar pregunta
                     </button>
                     <button
-                      className="bg-gray-400 hover:bg-gray-500 text-white px-6 py-2 rounded-lg font-bold shadow transition"
+                      className="cursor-pointer bg-gray-400 hover:bg-gray-500 text-white px-6 py-2 rounded-lg font-bold shadow transition"
                       onClick={() => setShowModal(false)}
                       type="button"
                     >
@@ -417,6 +559,71 @@ export default function Page() {
 
             {/* Panel principal */}
             <section className="flex flex-col items-center px-4 py-10 bg-transparent">
+              {/* ACTUALIZADO: Pregunta activa con datos del backend */}
+              {preguntaActiva && (
+                <div className="w-full bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl shadow-lg border-2 border-blue-400 p-6 mb-8 max-w-4xl mx-auto">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-bold text-blue-800 flex items-center gap-2">
+                      <FaQuestionCircle className="text-blue-600" />
+                      Pregunta Activa{" "}
+                      <span className="text-sm text-blue-600">
+                        (ID: {preguntaActiva.id})
+                      </span>
+                    </h3>
+                    <button
+                      onClick={cerrarPreguntaActiva}
+                      className="cursor-pointer bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg font-bold shadow transition"
+                    >
+                      <FaTimes className="inline mr-1" />
+                      Cerrar Pregunta
+                    </button>
+                  </div>
+
+                  <div className="bg-white rounded-lg p-4 shadow-inner border border-blue-200">
+                    <h4 className="text-lg font-semibold text-gray-800 mb-4">
+                      {preguntaActiva.pregunta}
+                    </h4>
+
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {preguntaActiva.opciones.map(
+                        (opcion: string, idx: number) => (
+                          <div
+                            key={idx}
+                            className={`flex items-center gap-3 p-3 rounded-lg border-2 transition ${
+                              idx === preguntaActiva.correcta
+                                ? "border-green-500 bg-green-50"
+                                : "border-gray-300 bg-gray-50"
+                            }`}
+                          >
+                            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-600 text-white text-sm font-bold flex items-center justify-center">
+                              {String.fromCharCode(65 + idx)}
+                            </span>
+                            <span className="font-medium text-gray-800">
+                              {opcion}
+                            </span>
+                            {idx === preguntaActiva.correcta && (
+                              <FaCheck className="text-green-600 ml-auto" />
+                            )}
+                          </div>
+                        )
+                      )}
+                    </div>
+
+                    <div className="mt-4 p-3 bg-green-100 border border-green-300 rounded-lg">
+                      <p className="text-sm text-green-800">
+                        <strong>Respuesta correcta:</strong> Opción{" "}
+                        {String.fromCharCode(65 + preguntaActiva.correcta)} -{" "}
+                        {preguntaActiva.opciones[preguntaActiva.correcta]}
+                      </p>
+                      <p className="text-xs text-green-700 mt-1">
+                        Datos extraídos del backend • Pregunta ID:{" "}
+                        {preguntaActiva.id}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Estudiante seleccionado */}
               {estudianteSeleccionado && (
                 <div className="w-full flex flex-col md:flex-row items-center justify-between bg-white rounded-xl shadow-lg border-2 border-green-400 px-8 py-4 mb-8 max-w-3xl mx-auto">
@@ -531,7 +738,6 @@ export default function Page() {
                           🪙 {e.oro} Oro
                         </span>
                       </div>
-                      {/* Botón de expulsar solo visible en hover */}
                       <button
                         className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg font-bold shadow transition"
                         onClick={() => expulsar(e.id)}
@@ -551,6 +757,7 @@ export default function Page() {
               </div>
             </section>
           </div>
+
           {/* Animación para el modal */}
           <style jsx>{`
             .animate-fade-in {

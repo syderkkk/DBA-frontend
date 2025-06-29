@@ -18,6 +18,7 @@ import {
 } from "@/services/classroomService";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Page() {
   const [joinCode, setJoinCode] = useState("");
@@ -146,12 +147,12 @@ export default function Page() {
                 </a>
               </li>
               <li>
-                <a
+                <Link
                   className="flex items-center gap-3 px-3 py-2 rounded-lg font-semibold text-black bg-gray-50 hover:bg-gray-100 hover:text-black transition-all duration-150 shadow-sm"
-                  href="#tienda"
+                  href="/store"
                 >
                   <FaStore /> Tienda
-                </a>
+                </Link>
               </li>
               <li>
                 <a

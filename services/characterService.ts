@@ -13,3 +13,7 @@ export const updateCharacterByClassroomAndId = (classroomId: string, characterId
   apiClient.patch(`/classroom/${classroomId}/character/${characterId}`, data);
 export const deleteCharacterByClassroomAndId = (classroomId: string, characterId: string) =>
   apiClient.delete(`/classroom/${classroomId}/character/${characterId}`);
+
+
+
+

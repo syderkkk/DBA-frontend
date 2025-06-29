@@ -9,9 +9,15 @@ import {
   FaCheck,
   FaUsers,
   FaQuestionCircle,
+  FaTimes,
 } from "react-icons/fa";
 import { useParams, useRouter } from "next/navigation";
 import { getClassroomById } from "@/services/classroomService";
+import {
+  getQuestionsByClassroom,
+  answerQuestion,
+  checkIfAnswered,
+} from "@/services/questionService";
 
 // Datos de ejemplo
 const estudiantesMock = [
@@ -41,18 +47,25 @@ const estudiantesMock = [
   },
 ];
 
+// Interface para la pregunta activa del estudiante
+interface PreguntaActivaEstudiante {
+  id: number;
+  pregunta: string;
+  opciones: string[];
+  yaRespondida: boolean;
+}
+
 // Sidebar para estudiante
-function Sidebar({
-  
-  setMostrarQR,
-}: {
-  setMostrarQR: (b: boolean) => void;
-}) {
+function Sidebar({ setMostrarQR }: { setMostrarQR: (b: boolean) => void }) {
   const router = useRouter();
   return (
     <aside className="fixed top-0 left-0 h-full w-64 bg-white text-black flex flex-col z-40 shadow-[0_0_32px_0_rgba(0,0,0,0.18)] border-r border-gray-200">
       <div className="flex items-center gap-2 px-6 py-7 border-b border-gray-200">
-        <span className="text-2xl font-bold tracking-tight font-sans select-none text-black drop-shadow">
+        <span
+          className="text-2xl font-bold tracking-tight font-sans select-none text-black drop-shadow cursor-pointer hover:text-green-600 transition-colors duration-200"
+          onClick={() => router.push("/dashboard/student")}
+          title="Ir al Dashboard"
+        >
           CLASSCRAFT
         </span>
       </div>
@@ -74,7 +87,8 @@ function Sidebar({
               className="cursor-pointer flex items-center gap-3 px-5 py-2 rounded-full bg-black/70 text-white shadow-lg backdrop-blur-sm font-semibold transition hover:bg-black/90 w-full"
               onClick={() => router.push("/dashboard/student")}
             >
-              <FaSignOutAlt className="text-green-500 text-xl" /> Regresar al inicio
+              <FaSignOutAlt className="text-green-500 text-xl" /> Regresar al
+              inicio
             </button>
           </li>
         </ul>
@@ -85,17 +99,18 @@ function Sidebar({
 
 export default function Page() {
   const [codigoClase, setCodigoClase] = useState<string>("");
-  const [estudiantes, setEstudiantes] = useState(estudiantesMock);
+  const [estudiantes] = useState(estudiantesMock);
   const [mostrarQR, setMostrarQR] = useState(false);
   const [copied, setCopied] = useState(false);
   const [busqueda, setBusqueda] = useState("");
-  const [preguntaActiva, setPreguntaActiva] = useState<null | {
-    pregunta: string;
-    opciones: string[];
-  }>(null);
-  const [respuesta, setRespuesta] = useState<number | null>(null);
 
-  
+  // Estados para la pregunta activa del backend
+  const [preguntaActiva, setPreguntaActiva] =
+    useState<PreguntaActivaEstudiante | null>(null);
+  const [respuesta, setRespuesta] = useState<number | null>(null);
+  const [cargandoPregunta, setCargandoPregunta] = useState(false);
+  const [enviandoRespuesta, setEnviandoRespuesta] = useState(false);
+  const [mensajeRespuesta, setMensajeRespuesta] = useState<string | null>(null);
 
   // Filtrado de estudiantes por nombre
   const estudiantesFiltrados = useMemo(
@@ -109,36 +124,172 @@ export default function Page() {
   const params = useParams();
   const classId = params?.id as string;
 
+  // ACTUALIZADO: Función para cargar preguntas del backend (solo al cargar la página)
+  const cargarPreguntaActiva = async () => {
+    if (!classId) return;
+
+    setCargandoPregunta(true);
+    try {
+      console.log("📤 Cargando preguntas del classroom:", classId);
+      const response = await getQuestionsByClassroom(classId);
+      const preguntas = response.data;
+
+      console.log("✅ Preguntas obtenidas:", preguntas);
+
+      if (preguntas.length > 0) {
+        // Obtener la pregunta más reciente (activa)
+        const ultimaPregunta = preguntas[preguntas.length - 1];
+
+        console.log("🎯 Pregunta activa encontrada:", ultimaPregunta);
+
+        // NUEVO: Verificar si el usuario ya respondió esta pregunta
+        try {
+          console.log(
+            "🔍 Verificando si ya respondió la pregunta:",
+            ultimaPregunta.id
+          );
+          const responseCheck = await checkIfAnswered(
+            ultimaPregunta.id.toString()
+          );
+          const yaRespondio = responseCheck.has_answered;
+
+          console.log(
+            "✅ Estado de respuesta:",
+            yaRespondio ? "Ya respondió" : "No ha respondido"
+          );
+
+          setPreguntaActiva({
+            id: ultimaPregunta.id,
+            pregunta: ultimaPregunta.question,
+            opciones: [
+              ultimaPregunta.option_1,
+              ultimaPregunta.option_2,
+              ultimaPregunta.option_3,
+              ultimaPregunta.option_4,
+            ].filter((op) => op !== null && op !== ""),
+            yaRespondida: yaRespondio, // USAR EL ESTADO DEL BACKEND
+          });
+
+          // Si ya respondió, limpiar la respuesta seleccionada
+          if (yaRespondio) {
+            setRespuesta(null);
+            console.log("🔒 Pregunta ya respondida - bloqueando interfaz");
+          }
+        } catch (checkError) {
+          console.warn(
+            "⚠️ Error al verificar estado de respuesta:",
+            checkError
+          );
+          // Si hay error verificando, asumir que no ha respondido
+          setPreguntaActiva({
+            id: ultimaPregunta.id,
+            pregunta: ultimaPregunta.question,
+            opciones: [
+              ultimaPregunta.option_1,
+              ultimaPregunta.option_2,
+              ultimaPregunta.option_3,
+              ultimaPregunta.option_4,
+            ].filter((op) => op !== null && op !== ""),
+            yaRespondida: false,
+          });
+        }
+
+        console.log("✅ Pregunta establecida como activa");
+      } else {
+        console.log("📭 No hay preguntas activas en este classroom");
+        setPreguntaActiva(null);
+      }
+    } catch (error) {
+      console.error("💥 Error al cargar preguntas:", error);
+      setPreguntaActiva(null);
+    } finally {
+      setCargandoPregunta(false);
+    }
+  };
+
+  // ACTUALIZADO: useEffect solo para cargar datos iniciales (sin polling)
   useEffect(() => {
     if (!classId) return;
+
+    // Cargar información de la clase
     getClassroomById(classId)
       .then((res) => {
         setCodigoClase(res.data.join_code);
+        console.log("✅ Classroom cargado:", res.data);
       })
       .catch(() => {
         setCodigoClase("SIN-CODIGO");
       });
 
-    // Simulación de pregunta activa (puedes reemplazar por fetch real)
-    setTimeout(() => {
-      setPreguntaActiva({
-        pregunta: "¿Cuál es la capital de Francia?",
-        opciones: ["Madrid", "París", "Roma", "Berlín"],
-      });
-    }, 1500);
+    // Cargar pregunta activa solo una vez al cargar la página
+    cargarPreguntaActiva();
+
+    // ELIMINADO: Ya no hay polling automático
+    // La página solo se actualiza al refrescar manualmente
   }, [classId]);
 
-  // Enviar respuesta (simulado)
-  const enviarRespuesta = () => {
-    if (respuesta === null) return;
-    alert("Respuesta enviada: " + preguntaActiva?.opciones[respuesta]);
-    setRespuesta(null);
-    setPreguntaActiva(null);
+  // ACTUALIZADO: Enviar respuesta al backend
+  const enviarRespuesta = async () => {
+    if (
+      respuesta === null ||
+      !preguntaActiva ||
+      enviandoRespuesta ||
+      preguntaActiva.yaRespondida
+    ) {
+      return;
+    }
+
+    setEnviandoRespuesta(true);
+    setMensajeRespuesta(null);
+
+    try {
+      console.log("📤 Enviando respuesta:", {
+        questionId: preguntaActiva.id,
+        selectedOption: `option_${respuesta + 1}`,
+      });
+
+      const response = await answerQuestion(preguntaActiva.id.toString(), {
+        selected_option: `option_${respuesta + 1}`,
+      });
+
+      console.log("✅ Respuesta enviada exitosamente:", response.data);
+
+      // Mostrar mensaje de resultado
+      setMensajeRespuesta(response.data.message);
+
+      // ACTUALIZADO: Marcar pregunta como respondida permanentemente
+      setPreguntaActiva((prev) =>
+        prev ? { ...prev, yaRespondida: true } : null
+      );
+
+      console.log("🔒 Pregunta marcada como respondida");
+    } catch (error: any) {
+      console.error("💥 Error al enviar respuesta:", error);
+      const errorMessage =
+        error.response?.data?.message || "Error al enviar la respuesta";
+      setMensajeRespuesta(errorMessage);
+
+      // ACTUALIZADO: Si ya respondió anteriormente, marcar como respondida
+      if (
+        errorMessage.includes("Ya respondiste") ||
+        errorMessage.includes("ya respondiste") ||
+        error.response?.status === 409
+      ) {
+        setPreguntaActiva((prev) =>
+          prev ? { ...prev, yaRespondida: true } : null
+        );
+        console.log(
+          "🔒 Pregunta marcada como ya respondida (detectado por error)"
+        );
+      }
+    } finally {
+      setEnviandoRespuesta(false);
+    }
   };
 
   return (
     <div className="relative min-h-screen">
-      {/* Fondo con imagen y overlay igual al dashboard */}
+      {/* Fondo con imagen y overlay */}
       <div
         className="fixed inset-0 z-0 bg-cover bg-center"
         style={{
@@ -205,40 +356,141 @@ export default function Page() {
 
             {/* Panel principal */}
             <section className="flex flex-col items-center px-4 py-10 bg-transparent">
-              {/* Pregunta activa */}
-              {preguntaActiva && (
+              {/* Estado de carga de preguntas */}
+              {cargandoPregunta && (
+                <div className="w-full flex flex-col items-center justify-center bg-blue-50 rounded-xl shadow-lg border-2 border-blue-300 px-8 py-6 mb-8 max-w-2xl mx-auto">
+                  <div className="flex items-center gap-3">
+                    <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-blue-800 font-semibold">
+                      Cargando preguntas activas...
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* ACTUALIZADO: Pregunta activa del backend */}
+              {!cargandoPregunta && preguntaActiva && (
                 <div className="w-full flex flex-col items-center justify-center bg-white rounded-xl shadow-lg border-2 border-green-400 px-8 py-6 mb-8 max-w-2xl mx-auto">
-                  <span className="block text-lg font-bold text-green-800 mb-4">
-                    <FaQuestionCircle className="inline mr-2" />
+                  <div className="flex items-center justify-between w-full mb-4">
+                    <h3 className="text-lg font-bold text-green-800 flex items-center gap-2">
+                      <FaQuestionCircle className="text-green-600" />
+                      Pregunta Activa
+                    </h3>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full font-semibold">
+                        ID: {preguntaActiva.id}
+                      </span>
+                      {preguntaActiva.yaRespondida && (
+                        <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full font-semibold">
+                          ✓ Respondida
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <span className="block text-lg font-bold text-gray-800 mb-4 text-center">
                     {preguntaActiva.pregunta}
                   </span>
+
+                  {/* Opciones de respuesta */}
                   <div className="flex flex-col gap-3 w-full">
-                    {preguntaActiva.opciones.map((op, idx) => (
+                    {preguntaActiva.opciones.map((opcion, idx) => (
                       <label
                         key={idx}
-                        className={`flex items-center gap-3 px-4 py-2 rounded-lg border-2 cursor-pointer transition ${respuesta === idx
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg border-2 transition ${
+                          respuesta === idx
                             ? "border-green-500 bg-green-50"
                             : "border-green-200 bg-white"
-                          }`}
+                        } ${
+                          preguntaActiva.yaRespondida
+                            ? "opacity-50 cursor-not-allowed"
+                            : "cursor-pointer hover:border-green-300"
+                        }`}
                       >
                         <input
                           type="radio"
                           name="respuesta"
                           checked={respuesta === idx}
-                          onChange={() => setRespuesta(idx)}
+                          onChange={() =>
+                            !preguntaActiva.yaRespondida && setRespuesta(idx)
+                          }
                           className="accent-green-600"
+                          disabled={preguntaActiva.yaRespondida}
                         />
-                        <span className="font-semibold">{op}</span>
+                        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-600 text-white text-sm font-bold flex items-center justify-center">
+                          {String.fromCharCode(65 + idx)}
+                        </span>
+                        <span className="font-semibold text-gray-800">
+                          {opcion}
+                        </span>
                       </label>
                     ))}
                   </div>
-                  <button
-                    className="mt-5 bg-green-600 hover:bg-green-700 text-white px-8 py-2 rounded-lg font-bold shadow transition"
-                    onClick={enviarRespuesta}
-                    disabled={respuesta === null}
-                  >
-                    Enviar respuesta
-                  </button>
+
+                  {/* ACTUALIZADO: Botón enviar respuesta */}
+                  {!preguntaActiva.yaRespondida && (
+                    <button
+                      className="mt-5 bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-bold shadow transition disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
+                      onClick={enviarRespuesta}
+                      disabled={respuesta === null || enviandoRespuesta}
+                    >
+                      {enviandoRespuesta && (
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      )}
+                      {enviandoRespuesta ? "Enviando..." : "Enviar respuesta"}
+                    </button>
+                  )}
+
+                  {/* Mensaje de resultado */}
+                  {mensajeRespuesta && (
+                    <div
+                      className={`mt-4 p-3 rounded-lg border ${
+                        mensajeRespuesta.includes("correcta") ||
+                        mensajeRespuesta.includes("¡")
+                          ? "bg-green-100 border-green-300 text-green-800"
+                          : "bg-red-100 border-red-300 text-red-800"
+                      }`}
+                    >
+                      <p className="text-sm font-semibold text-center">
+                        {mensajeRespuesta}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* ACTUALIZADO: Estado de pregunta respondida */}
+                  {preguntaActiva.yaRespondida && (
+                    <div className="mt-4 p-3 bg-blue-100 border border-blue-300 rounded-lg">
+                      <p className="text-sm text-blue-800 font-semibold text-center flex items-center justify-center gap-2">
+                        <FaCheck className="text-blue-600" />
+                        Ya has respondido esta pregunta
+                      </p>
+                      <p className="text-xs text-blue-600 text-center mt-1">
+                        Refresca la página para ver nuevas preguntas
+                      </p>
+                    </div>
+                  )}
+
+                  <p className="text-xs text-gray-500 mt-3 text-center">
+                    Pregunta extraída del backend • Refresca la página para ver
+                    actualizaciones
+                  </p>
+                </div>
+              )}
+
+              {/* ACTUALIZADO: Mensaje cuando no hay preguntas activas */}
+              {!cargandoPregunta && !preguntaActiva && (
+                <div className="w-full flex flex-col items-center justify-center bg-gray-50 rounded-xl shadow-lg border-2 border-gray-300 px-8 py-6 mb-8 max-w-2xl mx-auto">
+                  <FaQuestionCircle className="text-gray-400 text-4xl mb-3" />
+                  <h3 className="text-lg font-bold text-gray-600 mb-2">
+                    No hay preguntas activas
+                  </h3>
+                  <p className="text-sm text-gray-500 text-center mb-2">
+                    El profesor no ha publicado ninguna pregunta activa en este
+                    momento.
+                  </p>
+                  <p className="text-xs text-gray-400 text-center">
+                    Refresca la página para verificar nuevas preguntas
+                  </p>
                 </div>
               )}
 
