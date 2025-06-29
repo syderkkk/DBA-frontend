@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import Image from "next/image";
 import {
   FaQrcode,
@@ -9,43 +9,35 @@ import {
   FaCheck,
   FaUsers,
   FaQuestionCircle,
-  FaTimes,
 } from "react-icons/fa";
 import { useParams, useRouter } from "next/navigation";
-import { getClassroomById } from "@/services/classroomService";
+import {
+  getClassroomById,
+  getUsersInClassroom,
+} from "@/services/classroomService";
 import {
   getQuestionsByClassroom,
   answerQuestion,
   checkIfAnswered,
 } from "@/services/questionService";
 
-// Datos de ejemplo
-const estudiantesMock = [
-  {
-    id: 1,
-    nombre: "Ana",
-    personaje: "/zhongli_avatar.png",
-    hp: 80,
-    xp: 120,
-    oro: 50,
-  },
-  {
-    id: 2,
-    nombre: "Luis",
-    personaje: "/zhongli_avatar.png",
-    hp: 100,
-    xp: 90,
-    oro: 70,
-  },
-  {
-    id: 3,
-    nombre: "María",
-    personaje: "/zhongli_avatar.png",
-    hp: 60,
-    xp: 150,
-    oro: 30,
-  },
-];
+// ACTUALIZADA: Interface para participantes reales del backend
+interface Participante {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  current_skin?: string;
+  // Stats del classroom
+  hp: number;
+  max_hp: number;
+  mp: number;
+  max_mp: number;
+  // Stats globales
+  experience: number;
+  level: number;
+  gold: number;
+}
 
 // Interface para la pregunta activa del estudiante
 interface PreguntaActivaEstudiante {
@@ -54,6 +46,64 @@ interface PreguntaActivaEstudiante {
   opciones: string[];
   yaRespondida: boolean;
 }
+
+interface ApiError {
+  response?: {
+    status: number;
+    data?: {
+      message: string;
+    };
+  };
+  message: string;
+}
+
+// Interface para respuesta de preguntas
+interface QuestionResponse {
+  data: {
+    id: number;
+    question: string;
+    option_1: string;
+    option_2: string;
+    option_3?: string | null;
+    option_4?: string | null;
+    correct_option: string;
+    created_at: string;
+  }[];
+}
+
+// Interface para respuesta de verificación
+interface CheckAnswerResponse {
+  has_answered: boolean;
+}
+
+// NUEVA: Función para obtener la imagen del personaje basada en skin_code
+const getCharacterImageUrl = (skinCode?: string): string => {
+  // Si no hay skin_code, usar imagen por defecto
+  if (!skinCode) {
+    console.warn("⚠️ No se proporcionó skin_code, usando imagen por defecto");
+    return "/zhongli_avatar.png";
+  }
+
+  const skinMap: Record<string, string> = {
+    default_mage: "default_mage",
+    default_warrior: "default_warrior",
+    elite_warrior: "elite_warrior",
+    arcane_mage: "arcane_mage",
+  };
+
+  // Buscar el skin en el mapeo
+  const skinFileName = skinMap[skinCode];
+
+  if (skinFileName) {
+    const imagePath = `/skins/${skinFileName}.png`;
+    console.log(`✅ Cargando skin: ${skinCode} -> ${imagePath}`);
+    return imagePath;
+  } else {
+    // Si el código no existe en el mapeo, intentar cargar directamente
+    console.warn(`⚠️ Skin no mapeada: ${skinCode}, intentando carga directa`);
+    return `/skins/${skinCode}.png`;
+  }
+};
 
 // Sidebar para estudiante
 function Sidebar({ setMostrarQR }: { setMostrarQR: (b: boolean) => void }) {
@@ -99,7 +149,9 @@ function Sidebar({ setMostrarQR }: { setMostrarQR: (b: boolean) => void }) {
 
 export default function Page() {
   const [codigoClase, setCodigoClase] = useState<string>("");
-  const [estudiantes] = useState(estudiantesMock);
+  // ACTUALIZADO: Estado para participantes reales del backend
+  const [participantes, setParticipantes] = useState<Participante[]>([]);
+  const [cargandoParticipantes, setCargandoParticipantes] = useState(true);
   const [mostrarQR, setMostrarQR] = useState(false);
   const [copied, setCopied] = useState(false);
   const [busqueda, setBusqueda] = useState("");
@@ -112,26 +164,59 @@ export default function Page() {
   const [enviandoRespuesta, setEnviandoRespuesta] = useState(false);
   const [mensajeRespuesta, setMensajeRespuesta] = useState<string | null>(null);
 
-  // Filtrado de estudiantes por nombre
-  const estudiantesFiltrados = useMemo(
+  // ACTUALIZADO: Filtrado de participantes por nombre
+  const participantesFiltrados = useMemo(
     () =>
-      estudiantes.filter((e) =>
-        e.nombre.toLowerCase().includes(busqueda.toLowerCase())
+      participantes.filter((p) =>
+        p.name.toLowerCase().includes(busqueda.toLowerCase())
       ),
-    [estudiantes, busqueda]
+    [participantes, busqueda]
   );
 
   const params = useParams();
   const classId = params?.id as string;
 
-  // ACTUALIZADO: Función para cargar preguntas del backend (solo al cargar la página)
-  const cargarPreguntaActiva = async () => {
+  // CORREGIDA: Función para cargar participantes del backend
+  const cargarParticipantes = useCallback(async (): Promise<void> => {
+    if (!classId) return;
+
+    setCargandoParticipantes(true);
+    try {
+      console.log("👥 Cargando participantes del classroom:", classId);
+      const response = await getUsersInClassroom(classId);
+
+      console.log("✅ Participantes obtenidos:", response.data);
+      setParticipantes(response.data);
+    } catch (error) {
+      console.error("💥 Error al cargar participantes:", error);
+
+      const apiError = error as ApiError;
+
+      // NUEVO: Manejo específico de errores
+      if (apiError.response?.status === 403) {
+        console.warn(
+          "⚠️ Sin permisos para ver participantes - posible problema de autenticación"
+        );
+      } else if (apiError.response?.status === 404) {
+        console.warn("⚠️ Classroom no encontrado");
+      }
+
+      setParticipantes([]); // Array vacío en caso de error
+    } finally {
+      setCargandoParticipantes(false);
+    }
+  }, [classId]);
+
+  // CORREGIDA: Función para cargar preguntas del backend con manejo de errores
+  const cargarPreguntaActiva = useCallback(async (): Promise<void> => {
     if (!classId) return;
 
     setCargandoPregunta(true);
     try {
       console.log("📤 Cargando preguntas del classroom:", classId);
-      const response = await getQuestionsByClassroom(classId);
+      const response = (await getQuestionsByClassroom(
+        classId
+      )) as QuestionResponse;
       const preguntas = response.data;
 
       console.log("✅ Preguntas obtenidas:", preguntas);
@@ -142,15 +227,15 @@ export default function Page() {
 
         console.log("🎯 Pregunta activa encontrada:", ultimaPregunta);
 
-        // NUEVO: Verificar si el usuario ya respondió esta pregunta
+        // Verificar si el usuario ya respondió esta pregunta
         try {
           console.log(
             "🔍 Verificando si ya respondió la pregunta:",
             ultimaPregunta.id
           );
-          const responseCheck = await checkIfAnswered(
+          const responseCheck = (await checkIfAnswered(
             ultimaPregunta.id.toString()
-          );
+          )) as CheckAnswerResponse;
           const yaRespondio = responseCheck.has_answered;
 
           console.log(
@@ -166,11 +251,10 @@ export default function Page() {
               ultimaPregunta.option_2,
               ultimaPregunta.option_3,
               ultimaPregunta.option_4,
-            ].filter((op) => op !== null && op !== ""),
-            yaRespondida: yaRespondio, // USAR EL ESTADO DEL BACKEND
+            ].filter((op): op is string => op !== null && op !== ""),
+            yaRespondida: yaRespondio,
           });
 
-          // Si ya respondió, limpiar la respuesta seleccionada
           if (yaRespondio) {
             setRespuesta(null);
             console.log("🔒 Pregunta ya respondida - bloqueando interfaz");
@@ -180,7 +264,6 @@ export default function Page() {
             "⚠️ Error al verificar estado de respuesta:",
             checkError
           );
-          // Si hay error verificando, asumir que no ha respondido
           setPreguntaActiva({
             id: ultimaPregunta.id,
             pregunta: ultimaPregunta.question,
@@ -189,7 +272,7 @@ export default function Page() {
               ultimaPregunta.option_2,
               ultimaPregunta.option_3,
               ultimaPregunta.option_4,
-            ].filter((op) => op !== null && op !== ""),
+            ].filter((op): op is string => op !== null && op !== ""),
             yaRespondida: false,
           });
         }
@@ -200,14 +283,25 @@ export default function Page() {
         setPreguntaActiva(null);
       }
     } catch (error) {
-      console.error("💥 Error al cargar preguntas:", error);
-      setPreguntaActiva(null);
+      const apiError = error as ApiError;
+
+      // MEJORADO: Manejo silencioso específico para errores esperados
+      if (apiError.response?.status === 404) {
+        console.log(
+          "📭 No se encontraron preguntas activas (404) - esto es normal"
+        );
+        setPreguntaActiva(null);
+      } else {
+        // Solo mostrar otros errores como advertencias
+        console.error("💥 Error inesperado al cargar preguntas:", error);
+        setPreguntaActiva(null);
+      }
     } finally {
       setCargandoPregunta(false);
     }
-  };
+  }, [classId]);
 
-  // ACTUALIZADO: useEffect solo para cargar datos iniciales (sin polling)
+  // ACTUALIZADO: useEffect para cargar datos iniciales
   useEffect(() => {
     if (!classId) return;
 
@@ -221,15 +315,15 @@ export default function Page() {
         setCodigoClase("SIN-CODIGO");
       });
 
-    // Cargar pregunta activa solo una vez al cargar la página
+    // ACTIVADO: Cargar pregunta activa
     cargarPreguntaActiva();
 
-    // ELIMINADO: Ya no hay polling automático
-    // La página solo se actualiza al refrescar manualmente
-  }, [classId]);
+    // Cargar participantes de la clase
+    cargarParticipantes();
+  }, [classId, cargarPreguntaActiva, cargarParticipantes]);
 
-  // ACTUALIZADO: Enviar respuesta al backend
-  const enviarRespuesta = async () => {
+  // Enviar respuesta al backend
+  const enviarRespuesta = async (): Promise<void> => {
     if (
       respuesta === null ||
       !preguntaActiva ||
@@ -254,26 +348,25 @@ export default function Page() {
 
       console.log("✅ Respuesta enviada exitosamente:", response.data);
 
-      // Mostrar mensaje de resultado
       setMensajeRespuesta(response.data.message);
 
-      // ACTUALIZADO: Marcar pregunta como respondida permanentemente
       setPreguntaActiva((prev) =>
         prev ? { ...prev, yaRespondida: true } : null
       );
 
       console.log("🔒 Pregunta marcada como respondida");
-    } catch (error: any) {
+    } catch (error) {
       console.error("💥 Error al enviar respuesta:", error);
+
+      const apiError = error as ApiError;
       const errorMessage =
-        error.response?.data?.message || "Error al enviar la respuesta";
+        apiError.response?.data?.message || "Error al enviar la respuesta";
       setMensajeRespuesta(errorMessage);
 
-      // ACTUALIZADO: Si ya respondió anteriormente, marcar como respondida
       if (
         errorMessage.includes("Ya respondiste") ||
         errorMessage.includes("ya respondiste") ||
-        error.response?.status === 409
+        apiError.response?.status === 409
       ) {
         setPreguntaActiva((prev) =>
           prev ? { ...prev, yaRespondida: true } : null
@@ -368,7 +461,7 @@ export default function Page() {
                 </div>
               )}
 
-              {/* ACTUALIZADO: Pregunta activa del backend */}
+              {/* Pregunta activa del backend */}
               {!cargandoPregunta && preguntaActiva && (
                 <div className="w-full flex flex-col items-center justify-center bg-white rounded-xl shadow-lg border-2 border-green-400 px-8 py-6 mb-8 max-w-2xl mx-auto">
                   <div className="flex items-center justify-between w-full mb-4">
@@ -427,7 +520,7 @@ export default function Page() {
                     ))}
                   </div>
 
-                  {/* ACTUALIZADO: Botón enviar respuesta */}
+                  {/* Botón enviar respuesta */}
                   {!preguntaActiva.yaRespondida && (
                     <button
                       className="mt-5 bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-bold shadow transition disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
@@ -457,7 +550,7 @@ export default function Page() {
                     </div>
                   )}
 
-                  {/* ACTUALIZADO: Estado de pregunta respondida */}
+                  {/* Estado de pregunta respondida */}
                   {preguntaActiva.yaRespondida && (
                     <div className="mt-4 p-3 bg-blue-100 border border-blue-300 rounded-lg">
                       <p className="text-sm text-blue-800 font-semibold text-center flex items-center justify-center gap-2">
@@ -477,7 +570,7 @@ export default function Page() {
                 </div>
               )}
 
-              {/* ACTUALIZADO: Mensaje cuando no hay preguntas activas */}
+              {/* Mensaje cuando no hay preguntas activas */}
               {!cargandoPregunta && !preguntaActiva && (
                 <div className="w-full flex flex-col items-center justify-center bg-gray-50 rounded-xl shadow-lg border-2 border-gray-300 px-8 py-6 mb-8 max-w-2xl mx-auto">
                   <FaQuestionCircle className="text-gray-400 text-4xl mb-3" />
@@ -494,65 +587,131 @@ export default function Page() {
                 </div>
               )}
 
-              {/* Buscador y título */}
+              {/* ACTUALIZADO: Buscador y título con contador real */}
               <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 max-w-4xl mx-auto gap-4 w-full">
                 <span className="px-5 py-2 rounded-full bg-black/70 text-white shadow-lg backdrop-blur-sm flex flex-row items-center gap-2">
                   <FaUsers className="text-green-500 text-2xl" />
-                  <span>Participantes de la clase</span>
+                  <span>
+                    Participantes de la clase ({participantes.length})
+                  </span>
                 </span>
                 <input
                   type="text"
                   className="px-5 py-2 rounded-full bg-black/70 text-white placeholder:text-white/70 shadow-lg backdrop-blur-sm w-full max-w-xs border-none focus:ring-2 focus:ring-green-400"
-                  placeholder="Buscar estudiante..."
+                  placeholder="Buscar participante..."
                   value={busqueda}
                   onChange={(e) => setBusqueda(e.target.value)}
                 />
               </div>
 
-              {/* Lista de estudiantes */}
+              {/* ACTUALIZADO: Lista de participantes reales */}
               <div className="overflow-y-auto max-h-[60vh] pr-2 max-w-4xl mx-auto w-full pb-10">
-                <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                  {estudiantesFiltrados.length === 0 && (
-                    <div className="col-span-full flex justify-center">
-                      <span className="px-5 py-2 rounded-full bg-black/70 text-white shadow-lg backdrop-blur-sm flex flex-row items-center gap-2">
-                        <span>No se encontraron estudiantes.</span>
+                {/* Loading state */}
+                {cargandoParticipantes && (
+                  <div className="flex justify-center items-center py-20">
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+                      <span className="text-lg font-semibold text-gray-700">
+                        Cargando participantes...
                       </span>
                     </div>
-                  )}
-                  {estudiantesFiltrados.map((e) => (
-                    <div
-                      key={e.id}
-                      className="group relative flex flex-col items-center gap-2 p-8 rounded-2xl shadow-xl border-2 transition-all duration-300 bg-white border-green-100"
-                      style={{
-                        minWidth: "220px",
-                        maxWidth: "340px",
-                        margin: "0 auto",
-                      }}
-                    >
-                      <Image
-                        src={e.personaje}
-                        alt={e.nombre}
-                        width={70}
-                        height={70}
-                        className="w-16 h-16 rounded-full border-4 border-green-300 shadow-md bg-white object-cover mb-2"
-                      />
-                      <span className="block text-base font-semibold text-green-900">
-                        {e.nombre}
-                      </span>
-                      <div className="flex gap-2 mt-1 text-xs">
-                        <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded font-bold">
-                          ❤️ {e.hp} HP
+                  </div>
+                )}
+
+                {/* Grid de participantes */}
+                {!cargandoParticipantes && (
+                  <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                    {participantesFiltrados.length === 0 &&
+                      !cargandoParticipantes && (
+                        <div className="col-span-full flex justify-center">
+                          <span className="px-5 py-2 rounded-full bg-black/70 text-white shadow-lg backdrop-blur-sm flex flex-row items-center gap-2">
+                            <span>
+                              {busqueda
+                                ? "No se encontraron participantes con ese nombre."
+                                : "No hay participantes en esta clase."}
+                            </span>
+                          </span>
+                        </div>
+                      )}
+
+                    {participantesFiltrados.map((participante) => (
+                      <div
+                        key={participante.id}
+                        className="group relative flex flex-col items-center gap-2 p-8 rounded-2xl shadow-xl border-2 transition-all duration-300 bg-white border-green-100 hover:border-green-300 hover:shadow-2xl"
+                        style={{
+                          minWidth: "220px",
+                          maxWidth: "340px",
+                          margin: "0 auto",
+                        }}
+                      >
+                        {/* ACTUALIZADA: Imagen del personaje basada en current_skin */}
+                        <Image
+                          src={getCharacterImageUrl(participante.current_skin)}
+                          alt={`Avatar de ${participante.name}`}
+                          width={70}
+                          height={70}
+                          className="w-16 h-16 rounded-full border-4 border-green-300 shadow-md bg-white object-cover mb-2"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            console.warn(
+                              `❌ Error cargando skin para ${participante.name}:`,
+                              participante.current_skin
+                            );
+                            target.src = "/zhongli_avatar.png";
+                          }}
+                          onLoad={() => {
+                            console.log(
+                              `🖼️ Skin cargada exitosamente para ${participante.name}:`,
+                              participante.current_skin
+                            );
+                          }}
+                        />
+
+                        {/* ACTUALIZADO: Nombre real del participante */}
+                        <span className="block text-base font-semibold text-green-900 text-center">
+                          {participante.name}
                         </span>
-                        <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded font-bold">
-                          ⭐ {e.xp} XP
-                        </span>
-                        <span className="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded font-bold">
-                          🪙 {e.oro} Oro
-                        </span>
+
+                        {/* ACTUALIZADO: Stats del personaje del backend */}
+                        <div className="flex flex-wrap gap-1 mt-1 text-xs justify-center">
+                          <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded font-bold">
+                            ❤️ {participante.hp}/{participante.max_hp} HP
+                          </span>
+                          <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-bold">
+                            ⭐ Lv.{participante.level}
+                          </span>
+                          <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded font-bold">
+                            🎯 {participante.experience} XP
+                          </span>
+                          <span className="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded font-bold">
+                            🪙 {participante.gold} Oro
+                          </span>
+                          <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded font-bold">
+                            💙 {participante.mp}/{participante.max_mp} MP
+                          </span>
+                        </div>
+
+                        {/* NUEVO: Email del participante */}
+                        <div className="text-xs text-gray-400 mt-1 truncate max-w-full">
+                          {participante.email}
+                        </div>
+
+                        {/* NUEVO: Role badge */}
+                        <div
+                          className={`text-xs px-2 py-1 rounded-full font-bold ${
+                            participante.role === "professor"
+                              ? "bg-orange-100 text-orange-700"
+                              : "bg-green-100 text-green-700"
+                          }`}
+                        >
+                          {participante.role === "professor"
+                            ? "👨‍🏫 Profesor"
+                            : "👨‍🎓 Estudiante"}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </section>
           </div>

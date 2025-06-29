@@ -83,7 +83,6 @@ export const getUserGold = (): Promise<{ data: UserGoldResponse }> => {
   return apiClient.get('/user/gold');
 };
 
-// Función adicional si la necesitas
 export const getShopCharacters = (): Promise<{ data: ShopCharacter[] }> => {
   return apiClient.get('/shop/characters');
 };

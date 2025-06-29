@@ -157,9 +157,9 @@ export default function Page() {
               <li>
                 <a
                   className="flex items-center gap-3 px-3 py-2 rounded-lg font-semibold text-black bg-gray-50 hover:bg-gray-100 hover:text-black transition-all duration-150 shadow-sm"
-                  href="#perfil"
+                  href="#"
                 >
-                  <FaUser /> Perfil
+                  <FaUser /> Cerrar sesión
                 </a>
               </li>
             </ul>
