@@ -12,7 +12,7 @@ import {
 import { EstudianteReal, PreguntaActiva } from "@/types/types";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useCallback, useMemo, memo } from "react";
-
+import { deleteClassroomById } from "@/services/classroomService";
 interface SidebarProps {
   girarRuleta: () => void;
   girando: boolean;
@@ -21,6 +21,7 @@ interface SidebarProps {
   setMostrarQR: (b: boolean) => void;
   preguntasEnviadas: string[];
   preguntaActiva: PreguntaActiva | null;
+  classId: string;
 }
 
 // ✅ COMPONENTE MEMO para evitar re-renders innecesarios
@@ -32,6 +33,7 @@ const Sidebar = memo(function Sidebar({
   setMostrarQR,
   preguntasEnviadas,
   preguntaActiva,
+  classId,
 }: SidebarProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
@@ -72,12 +74,24 @@ const Sidebar = memo(function Sidebar({
     }
   }, [setMostrarQR, checkIsMobile, closeSidebar]);
 
-  const handleFinalizarClase = useCallback(() => {
-    console.log("Finalizar clase - función pendiente");
+  const handleFinalizarClase = useCallback(async () => {
+    if (!(classId && typeof window !== "undefined")) return;
+    const confirmed = window.confirm(
+      "¿Estás seguro de que deseas finalizar (eliminar) esta clase? Esta acción no se puede deshacer."
+    );
+    if (!confirmed) return;
+    try {
+      await deleteClassroomById(classId);
+      alert("Clase finalizada correctamente.");
+      router.push("/dashboard/professor");
+    } catch (error) {
+      alert("Error al finalizar la clase.");
+      console.error(error);
+    }
     if (checkIsMobile()) {
       closeSidebar();
     }
-  }, [checkIsMobile, closeSidebar]);
+  }, [classId, router, checkIsMobile, closeSidebar]);
 
   const handleGoToDashboard = useCallback(() => {
     router.push("/dashboard/professor");

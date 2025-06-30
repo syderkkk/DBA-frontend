@@ -376,6 +376,7 @@ export default function Page() {
           setMostrarQR={setMostrarQR}
           preguntasEnviadas={preguntasEnviadas}
           preguntaActiva={preguntaActiva}
+          classId={classId}
         />
 
         {/* Contenido principal */}
