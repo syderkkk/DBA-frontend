@@ -25,26 +25,33 @@ import {
   answerQuestion,
   checkIfAnswered,
 } from "@/services/questionService";
+import websocketService from "@/services/websocketService";
 
-// ACTUALIZADA: Interface para participantes reales del backend
+interface UserJoinedEvent {
+  user: {
+    id: number;
+    name: string;
+    email: string;
+  };
+  timestamp: string;
+  event_type: string;
+}
+
 interface Participante {
   id: number;
   name: string;
   email: string;
   role: string;
   current_skin?: string;
-  // Stats del classroom
   hp: number;
   max_hp: number;
   mp: number;
   max_mp: number;
-  // Stats globales
   experience: number;
   level: number;
   gold: number;
 }
 
-// Interface para la pregunta activa del estudiante
 interface PreguntaActivaEstudiante {
   id: number;
   pregunta: string;
@@ -62,7 +69,6 @@ interface ApiError {
   message: string;
 }
 
-// Interface para respuesta de preguntas
 interface QuestionResponse {
   data: {
     id: number;
@@ -76,35 +82,27 @@ interface QuestionResponse {
   }[];
 }
 
-// Interface para respuesta de verificación
 interface CheckAnswerResponse {
   has_answered: boolean;
 }
 
-// NUEVA: Función para obtener la imagen del personaje basada en skin_code
 const getCharacterImageUrl = (skinCode?: string): string => {
-  // Si no hay skin_code, usar imagen por defecto
   if (!skinCode) {
     console.warn("⚠️ No se proporcionó skin_code, usando imagen por defecto");
     return "/zhongli_avatar.png";
   }
-
   const skinMap: Record<string, string> = {
     default_mage: "default_mage",
     default_warrior: "default_warrior",
     elite_warrior: "elite_warrior",
     arcane_mage: "arcane_mage",
   };
-
-  // Buscar el skin en el mapeo
   const skinFileName = skinMap[skinCode];
-
   if (skinFileName) {
     const imagePath = `/skins/${skinFileName}.png`;
     console.log(`✅ Cargando skin: ${skinCode} -> ${imagePath}`);
     return imagePath;
   } else {
-    // Si el código no existe en el mapeo, intentar cargar directamente
     console.warn(`⚠️ Skin no mapeada: ${skinCode}, intentando carga directa`);
     return `/skins/${skinCode}.png`;
   }
@@ -119,7 +117,6 @@ export default function Page() {
   const [busqueda, setBusqueda] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Estados para la pregunta activa del backend
   const [preguntaActiva, setPreguntaActiva] =
     useState<PreguntaActivaEstudiante | null>(null);
   const [respuesta, setRespuesta] = useState<number | null>(null);
@@ -127,13 +124,11 @@ export default function Page() {
   const [enviandoRespuesta, setEnviandoRespuesta] = useState(false);
   const [mensajeRespuesta, setMensajeRespuesta] = useState<string | null>(null);
 
-  // Referencias para gestión de foco
   const sidebarRef = useRef<HTMLElement>(null);
   const hamburgerButtonRef = useRef<HTMLButtonElement>(null);
 
   const router = useRouter();
 
-  // ACTUALIZADO: Filtrado de participantes por nombre
   const participantesFiltrados = useMemo(
     () =>
       participantes.filter((p) =>
@@ -145,16 +140,51 @@ export default function Page() {
   const params = useParams();
   const classId = params?.id as string;
 
-  // Función para cerrar sidebar y gestionar foco
+  // --- WEBSOCKET: ESCUCHAR EVENTOS EN TIEMPO REAL ---
+  useEffect(() => {
+    if (!classId) return;
+
+    websocketService.joinClassroom(classId);
+
+    websocketService.onQuestionCreated((data) => {
+      setPreguntaActiva({
+        id: data.question.id,
+        pregunta: data.question.question,
+        opciones: [
+          data.question.option_1,
+          data.question.option_2,
+          data.question.option_3,
+          data.question.option_4,
+        ].filter((op): op is string => !!op),
+        yaRespondida: false,
+      });
+      setRespuesta(null);
+      setMensajeRespuesta(null);
+    });
+
+    websocketService.onQuestionClosed(() => {
+      setPreguntaActiva(null);
+      setMensajeRespuesta("La pregunta ha sido cerrada por el profesor.");
+    });
+
+    // 👉 Escuchar cuando un usuario se une
+    websocketService.onUserJoined((data: UserJoinedEvent) => {
+      console.log("👤 Usuario se unió:", data.user);
+      cargarParticipantes();
+    });
+
+    return () => {
+      websocketService.disconnect();
+    };
+  }, [classId]);
+
   const closeSidebar = () => {
     setSidebarOpen(false);
-    // Devolver foco al botón hamburguesa
     setTimeout(() => {
       hamburgerButtonRef.current?.focus();
     }, 100);
   };
 
-  // Gestión de foco cuando se abre/cierra el sidebar
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 1024) {
@@ -162,9 +192,7 @@ export default function Page() {
       }
     };
 
-    // Gestión del foco cuando se abre el sidebar
     if (sidebarOpen) {
-      // Cuando se abre, enfoca el primer elemento navegable después de un breve delay
       setTimeout(() => {
         const firstFocusable = sidebarRef.current?.querySelector(
           'button:not([disabled]), a, input:not([disabled]), [tabindex]:not([tabindex="-1"])'
@@ -179,7 +207,6 @@ export default function Page() {
     return () => window.removeEventListener("resize", handleResize);
   }, [sidebarOpen]);
 
-  // Gestión de teclas de escape y prevención de scroll
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && sidebarOpen) {
@@ -189,7 +216,6 @@ export default function Page() {
 
     if (sidebarOpen) {
       document.addEventListener("keydown", handleEscape);
-      // Prevenir scroll del body en móvil
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";
@@ -201,72 +227,38 @@ export default function Page() {
     };
   }, [sidebarOpen]);
 
-  // CORREGIDA: Función para cargar participantes del backend
   const cargarParticipantes = useCallback(async (): Promise<void> => {
     if (!classId) return;
 
     setCargandoParticipantes(true);
     try {
-      console.log("👥 Cargando participantes del classroom:", classId);
       const response = await getUsersInClassroom(classId);
-
-      console.log("✅ Participantes obtenidos:", response.data);
       setParticipantes(response.data);
-    } catch (error) {
-      console.error("💥 Error al cargar participantes:", error);
-
-      const apiError = error as ApiError;
-
-      // NUEVO: Manejo específico de errores
-      if (apiError.response?.status === 403) {
-        console.warn(
-          "⚠️ Sin permisos para ver participantes - posible problema de autenticación"
-        );
-      } else if (apiError.response?.status === 404) {
-        console.warn("⚠️ Classroom no encontrado");
-      }
-
-      setParticipantes([]); // Array vacío en caso de error
+    } catch {
+      setParticipantes([]);
     } finally {
       setCargandoParticipantes(false);
     }
   }, [classId]);
 
-  // CORREGIDA: Función para cargar preguntas del backend con manejo de errores
   const cargarPreguntaActiva = useCallback(async (): Promise<void> => {
     if (!classId) return;
 
     setCargandoPregunta(true);
     try {
-      console.log("📤 Cargando preguntas del classroom:", classId);
       const response = (await getQuestionsByClassroom(
         classId
       )) as QuestionResponse;
       const preguntas = response.data;
 
-      console.log("✅ Preguntas obtenidas:", preguntas);
-
       if (preguntas.length > 0) {
-        // Obtener la pregunta más reciente (activa)
         const ultimaPregunta = preguntas[preguntas.length - 1];
 
-        console.log("🎯 Pregunta activa encontrada:", ultimaPregunta);
-
-        // Verificar si el usuario ya respondió esta pregunta
         try {
-          console.log(
-            "🔍 Verificando si ya respondió la pregunta:",
-            ultimaPregunta.id
-          );
           const responseCheck = (await checkIfAnswered(
             ultimaPregunta.id.toString()
           )) as CheckAnswerResponse;
           const yaRespondio = responseCheck.has_answered;
-
-          console.log(
-            "✅ Estado de respuesta:",
-            yaRespondio ? "Ya respondió" : "No ha respondido"
-          );
 
           setPreguntaActiva({
             id: ultimaPregunta.id,
@@ -282,13 +274,8 @@ export default function Page() {
 
           if (yaRespondio) {
             setRespuesta(null);
-            console.log("🔒 Pregunta ya respondida - bloqueando interfaz");
           }
-        } catch (checkError) {
-          console.warn(
-            "⚠️ Error al verificar estado de respuesta:",
-            checkError
-          );
+        } catch {
           setPreguntaActiva({
             id: ultimaPregunta.id,
             pregunta: ultimaPregunta.question,
@@ -301,53 +288,31 @@ export default function Page() {
             yaRespondida: false,
           });
         }
-
-        console.log("✅ Pregunta establecida como activa");
       } else {
-        console.log("📭 No hay preguntas activas en este classroom");
         setPreguntaActiva(null);
       }
-    } catch (error) {
-      const apiError = error as ApiError;
-
-      // MEJORADO: Manejo silencioso específico para errores esperados
-      if (apiError.response?.status === 404) {
-        console.log(
-          "📭 No se encontraron preguntas activas (404) - esto es normal"
-        );
-        setPreguntaActiva(null);
-      } else {
-        // Solo mostrar otros errores como advertencias
-        console.error("💥 Error inesperado al cargar preguntas:", error);
-        setPreguntaActiva(null);
-      }
+    } catch {
+      setPreguntaActiva(null);
     } finally {
       setCargandoPregunta(false);
     }
   }, [classId]);
 
-  // ACTUALIZADO: useEffect para cargar datos iniciales
   useEffect(() => {
     if (!classId) return;
 
-    // Cargar información de la clase
     getClassroomById(classId)
       .then((res) => {
         setCodigoClase(res.data.join_code);
-        console.log("✅ Classroom cargado:", res.data);
       })
       .catch(() => {
         setCodigoClase("SIN-CODIGO");
       });
 
-    // ACTIVADO: Cargar pregunta activa
     cargarPreguntaActiva();
-
-    // Cargar participantes de la clase
     cargarParticipantes();
   }, [classId, cargarPreguntaActiva, cargarParticipantes]);
 
-  // Enviar respuesta al backend
   const enviarRespuesta = async (): Promise<void> => {
     if (
       respuesta === null ||
@@ -362,27 +327,16 @@ export default function Page() {
     setMensajeRespuesta(null);
 
     try {
-      console.log("📤 Enviando respuesta:", {
-        questionId: preguntaActiva.id,
-        selectedOption: `option_${respuesta + 1}`,
-      });
-
       const response = await answerQuestion(preguntaActiva.id.toString(), {
         selected_option: `option_${respuesta + 1}`,
       });
-
-      console.log("✅ Respuesta enviada exitosamente:", response.data);
 
       setMensajeRespuesta(response.data.message);
 
       setPreguntaActiva((prev) =>
         prev ? { ...prev, yaRespondida: true } : null
       );
-
-      console.log("🔒 Pregunta marcada como respondida");
     } catch (error) {
-      console.error("💥 Error al enviar respuesta:", error);
-
       const apiError = error as ApiError;
       const errorMessage =
         apiError.response?.data?.message || "Error al enviar la respuesta";
@@ -395,9 +349,6 @@ export default function Page() {
       ) {
         setPreguntaActiva((prev) =>
           prev ? { ...prev, yaRespondida: true } : null
-        );
-        console.log(
-          "🔒 Pregunta marcada como ya respondida (detectado por error)"
         );
       }
     } finally {
@@ -457,7 +408,11 @@ export default function Page() {
           className={`
             fixed top-0 left-0 h-screen w-64 bg-white/95 backdrop-blur-md text-black flex flex-col z-40 
             shadow-2xl border-r border-gray-200/50 pointer-events-auto transition-transform duration-300 ease-in-out
-            ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+            ${
+              sidebarOpen
+                ? "translate-x-0"
+                : "-translate-x-full lg:translate-x-0"
+            }
           `}
           role="navigation"
           aria-label="Menú principal"
@@ -711,9 +666,7 @@ export default function Page() {
                             : ""
                         }`}
                         whileHover={
-                          !preguntaActiva.yaRespondida
-                            ? { scale: 1.01 }
-                            : {}
+                          !preguntaActiva.yaRespondida ? { scale: 1.01 } : {}
                         }
                       >
                         <input
@@ -905,7 +858,9 @@ export default function Page() {
                           transition={{ type: "spring", stiffness: 300 }}
                         >
                           <Image
-                            src={getCharacterImageUrl(participante.current_skin)}
+                            src={getCharacterImageUrl(
+                              participante.current_skin
+                            )}
                             alt={`Avatar de ${participante.name}`}
                             width={80}
                             height={80}
