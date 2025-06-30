@@ -19,6 +19,7 @@ export interface UserSkin {
   name: string;
   description: string;
   price: number;
+  is_equipped: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -85,4 +86,8 @@ export const getUserGold = (): Promise<{ data: UserGoldResponse }> => {
 
 export const getShopCharacters = (): Promise<{ data: ShopCharacter[] }> => {
   return apiClient.get('/shop/characters');
+};
+
+export const getCurrentSkin = (): Promise<{ data: UserSkin }> => {
+  return apiClient.get('/character/current-skin');
 };

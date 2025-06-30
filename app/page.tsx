@@ -13,7 +13,9 @@ export default function Home() {
       <HeroSection></HeroSection>
 
       {/* Beneficios Concretos */}
-      <BenefitsSection></BenefitsSection>
+      <section id="benefits">
+        <BenefitsSection></BenefitsSection>
+      </section>
 
       {/* Features Section */}
       <FeatureSection></FeatureSection>

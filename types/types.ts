@@ -54,3 +54,85 @@ export const fadeInUp = {
     },
   }),
 };
+
+
+
+
+
+
+export interface EstudianteReal {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  current_skin: string | null;
+  hp: number;
+  max_hp: number;
+  mp: number;
+  max_mp: number;
+  experience: number;
+  level: number;
+  gold: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PreguntaActiva {
+  id: number;
+  pregunta: string;
+  opciones: string[];
+  correcta: number;
+  timestamp: number;
+}
+
+export interface ErrorResponse {
+  response?: {
+    data?: {
+      message?: string;
+    };
+    status?: number;
+  };
+  message?: string;
+}
+
+export interface CreateQuestionPayload {
+  question: string;
+  option_1: string;
+  option_2: string;
+  option_3?: string;
+  option_4?: string;
+  correct_option: string;
+}
+
+export interface QuestionFromBackend {
+  id: number;
+  question: string;
+  option_1: string;
+  option_2: string;
+  option_3: string | null;
+  option_4: string | null;
+  correct_option: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+
+export interface GeneratedQuestion {
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation?: string;
+}
+
+export interface AIServiceResponse {
+  question?: string;
+  pregunta?: string;
+  options?: string[];
+  opciones?: string[];
+  option_1?: string;
+  option_2?: string;
+  option_3?: string;
+  option_4?: string;
+  correctAnswer?: number;
+  correct_option?: number;
+}

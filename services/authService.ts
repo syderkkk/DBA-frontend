@@ -1,9 +1,11 @@
 import apiClient from "./apiClient";
 
 interface RegisterData {
-  username: string;
+  name: string;
+  email: string;
   password: string;
-  email?: string;
+  password_confirmation: string;
+  role: string;
 }
 
 export interface LoginData {

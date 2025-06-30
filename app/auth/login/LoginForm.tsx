@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { FaGoogle, FaRegStar } from "react-icons/fa";
+import { FaGoogle, FaRegStar, FaSpinner } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { fadeInUp } from "@/types/types";
 import { getUser, login } from "@/services/authService"; // Asegúrate de importar tu servicio
@@ -12,11 +12,14 @@ export default function LoginForm() {
   const [email, setEmail] = useState("italo@gmail.com");
   const [password, setPassword] = useState("a322");
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setIsLoading(true);
+
     try {
       const response = await login({ email, password });
       const token = response.data.token;
@@ -37,6 +40,8 @@ export default function LoginForm() {
     } catch (err: unknown) {
       console.error(err);
       setError("Credenciales incorrectas");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -126,16 +131,33 @@ export default function LoginForm() {
           </div>
           <button
             type="submit"
-            className="cursor-pointer w-full bg-cyan-400 text-black font-bold py-2 rounded-lg hover:bg-cyan-300 transition"
+            disabled={isLoading}
+            className={`cursor-pointer w-full font-bold py-2 rounded-lg transition flex items-center justify-center ${
+              isLoading
+                ? "bg-cyan-400/50 text-black/50 cursor-not-allowed"
+                : "bg-cyan-400 text-black hover:bg-cyan-300"
+            }`}
           >
-            Iniciar Sesión
+            {isLoading ? (
+              <>
+                <FaSpinner className="animate-spin mr-2 w-4 h-4" />
+                Iniciando sesión...
+              </>
+            ) : (
+              "Iniciar Sesión"
+            )}
           </button>
           <motion.button
             custom={5.5}
             variants={fadeInUp}
             type="button"
+            disabled={isLoading}
             onClick={() => (window.location.href = "/")}
-            className="cursor-pointer w-full mt-2 bg-transparent border border-cyan-300/40 text-cyan-200 font-bold py-2 rounded-lg hover:bg-cyan-300/10 transition"
+            className={`cursor-pointer w-full mt-2 bg-transparent border border-cyan-300/40 font-bold py-2 rounded-lg transition ${
+              isLoading
+                ? "text-cyan-200/50 border-cyan-300/20 cursor-not-allowed"
+                : "text-cyan-200 hover:bg-cyan-300/10"
+            }`}
           >
             Cancelar y volver al inicio
           </motion.button>
