@@ -1,4 +1,3 @@
-// Página en React/Next.js con Tailwind y framer-motion
 "use client"
 
 import { motion } from "framer-motion"

@@ -28,12 +28,10 @@ export default function JoinPage() {
       if (!code) return;
       setStatus("joining");
       try {
-        // Verifica si el usuario está autenticado y es estudiante
         const user = await getUser();
         if (user?.data?.role !== "student") {
           setStatus("unauthorized");
           timeout = setTimeout(() => {
-            // Redirige según el rol
             if (user?.data?.role === "professor") {
               router.push("/dashboard/professor");
             } else {
@@ -42,7 +40,6 @@ export default function JoinPage() {
           }, 2500);
           return;
         }
-        // Intenta unirse a la clase
         const res = await joinClassroomByCode(code);
         setStatus("success");
         timeout = setTimeout(() => {

@@ -24,7 +24,6 @@ interface SidebarProps {
   classId: string;
 }
 
-// ✅ COMPONENTE MEMO para evitar re-renders innecesarios
 const Sidebar = memo(function Sidebar({
   girarRuleta,
   girando,
@@ -39,12 +38,10 @@ const Sidebar = memo(function Sidebar({
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
-  // ✅ DETECTAR móvil de forma estable
   const checkIsMobile = useCallback(() => {
     return window.innerWidth < 768;
   }, []);
 
-  // ✅ FUNCIONES ESTABLES con dependencias mínimas
   const closeSidebar = useCallback(() => {
     setIsOpen(false);
   }, []);
@@ -98,7 +95,6 @@ const Sidebar = memo(function Sidebar({
     closeSidebar();
   }, [router, closeSidebar]);
 
-  // ✅ VALORES MEMOIZADOS para evitar recálculos
   const ruletaDisabled = useMemo(
     () => girando || estudiantesFiltrados.length === 0,
     [girando, estudiantesFiltrados.length]
@@ -116,26 +112,22 @@ const Sidebar = memo(function Sidebar({
 
   const showSidebar = useMemo(() => !isMobile || isOpen, [isMobile, isOpen]);
 
-  // ✅ useEffect OPTIMIZADO para resize
   useEffect(() => {
     const handleResize = () => {
       const mobile = checkIsMobile();
       setIsMobile(mobile);
 
-      // Si cambia a desktop, cerrar sidebar
       if (!mobile && isOpen) {
         setIsOpen(false);
       }
     };
 
-    // Establecer estado inicial
     handleResize();
 
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [isOpen, checkIsMobile]); // Dependencias mínimas y estables
+  }, [isOpen, checkIsMobile]);
 
-  // ✅ COMPONENTE MEMOIZADO para botón móvil
   const MobileToggle = useMemo(() => {
     if (!showMobileToggle) return null;
 
@@ -154,11 +146,9 @@ const Sidebar = memo(function Sidebar({
     );
   }, [showMobileToggle, openSidebar]);
 
-  // ✅ COMPONENTE MEMOIZADO para contenido del sidebar
   const SidebarContent = useMemo(
     () => (
       <>
-        {/* Header del sidebar */}
         <div className="flex items-center justify-between px-4 md:px-6 py-4 md:py-6 border-b border-gray-200/50">
           <motion.span
             className="text-lg md:text-xl font-bold tracking-tight font-sans select-none text-transparent bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text drop-shadow cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-400 rounded-lg"
@@ -171,7 +161,6 @@ const Sidebar = memo(function Sidebar({
             CLASSCRAFT
           </motion.span>
 
-          {/* Botón cerrar solo en móvil */}
           {isMobile && (
             <motion.button
               className="p-2 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400"
@@ -188,7 +177,6 @@ const Sidebar = memo(function Sidebar({
           className="flex-1 px-3 md:px-4 py-4 md:py-6 overflow-y-auto"
           role="navigation"
         >
-          {/* Acciones principales */}
           <div className="mb-4 md:mb-6">
             <div className="mb-2 md:mb-3 px-2 md:px-3 text-xs text-gray-600 uppercase tracking-wider font-bold">
               Acciones
@@ -301,7 +289,6 @@ const Sidebar = memo(function Sidebar({
             </ul>
           </div>
 
-          {/* Estado de actividad reciente */}
           <div className="mb-4 md:mb-6">
             <div className="mb-2 md:mb-3 px-2 md:px-3 text-xs text-gray-600 uppercase tracking-wider font-bold">
               Actividad Reciente
@@ -312,7 +299,7 @@ const Sidebar = memo(function Sidebar({
                 <ul className="space-y-1 md:space-y-2 max-h-24 md:max-h-32 overflow-y-auto pr-1 md:pr-2">
                   {preguntasRecientes.map((pregunta: string, index: number) => (
                     <motion.li
-                      key={`pregunta-${index}-${pregunta.slice(0, 10)}`} // Key más estable
+                      key={`pregunta-${index}-${pregunta.slice(0, 10)}`}
                       className="px-2 md:px-3 py-1 md:py-2 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200/50"
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -339,7 +326,6 @@ const Sidebar = memo(function Sidebar({
             </motion.div>
           </div>
 
-          {/* Navegación */}
           <div className="mt-4 md:mt-6">
             <div className="mb-2 md:mb-3 px-2 md:px-3 text-xs text-gray-600 uppercase tracking-wider font-bold">
               Navegación
@@ -385,7 +371,6 @@ const Sidebar = memo(function Sidebar({
     <>
       {MobileToggle}
 
-      {/* Overlay para móvil */}
       <AnimatePresence>
         {isOpen && isMobile && (
           <motion.div
@@ -398,7 +383,6 @@ const Sidebar = memo(function Sidebar({
         )}
       </AnimatePresence>
 
-      {/* Sidebar */}
       <AnimatePresence>
         {showSidebar && (
           <motion.aside

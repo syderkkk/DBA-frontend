@@ -140,7 +140,6 @@ export default function Page() {
   const params = useParams();
   const classId = params?.id as string;
 
-  // --- WEBSOCKET: ESCUCHAR EVENTOS EN TIEMPO REAL ---
   useEffect(() => {
     if (!classId) return;
 
@@ -358,7 +357,6 @@ export default function Page() {
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50">
-      {/* Fondo con imagen y overlay */}
       <div
         className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
         style={{
@@ -368,7 +366,6 @@ export default function Page() {
       />
       <div className="fixed inset-0 z-10 bg-gradient-to-b from-white/70 via-white/50 to-white/80 backdrop-blur-[1px] pointer-events-none" />
 
-      {/* Botón hamburguesa para móvil - Solo mostrar cuando el sidebar esté cerrado */}
       <AnimatePresence>
         {!sidebarOpen && (
           <motion.button
@@ -389,7 +386,6 @@ export default function Page() {
       </AnimatePresence>
 
       <div className="relative z-20 flex min-h-screen">
-        {/* Overlay para sidebar móvil */}
         <AnimatePresence>
           {sidebarOpen && (
             <motion.div
@@ -402,7 +398,6 @@ export default function Page() {
           )}
         </AnimatePresence>
 
-        {/* CORREGIDO: Sidebar con altura completa fija */}
         <motion.aside
           ref={sidebarRef}
           className={`
@@ -417,7 +412,6 @@ export default function Page() {
           role="navigation"
           aria-label="Menú principal"
         >
-          {/* Header del sidebar */}
           <div className="flex items-center justify-between px-6 py-6 border-b border-gray-200/50">
             <motion.span
               className="text-xl font-bold tracking-tight font-sans select-none text-transparent bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text drop-shadow cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-400 rounded-lg"
@@ -439,7 +433,6 @@ export default function Page() {
               CLASSCRAFT
             </motion.span>
 
-            {/* Botón cerrar en móvil */}
             <motion.button
               className="lg:hidden text-gray-500 hover:text-gray-700 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
               onClick={closeSidebar}
@@ -452,7 +445,6 @@ export default function Page() {
             </motion.button>
           </div>
 
-          {/* Navegación */}
           <nav className="flex-1 px-4 py-6 overflow-y-auto" role="navigation">
             <ul className="space-y-3" role="list">
               {[
@@ -512,10 +504,8 @@ export default function Page() {
           </nav>
         </motion.aside>
 
-        {/* CORREGIDO: Contenido principal con margin adecuado */}
         <main className="flex-1 lg:ml-64 min-h-screen">
           <div className="h-full px-4 sm:px-6 lg:px-8 py-6 lg:py-8 pt-20 lg:pt-6">
-            {/* Modal QR - Mejorado para móvil */}
             <AnimatePresence>
               {mostrarQR && (
                 <motion.div
@@ -604,9 +594,8 @@ export default function Page() {
               )}
             </AnimatePresence>
 
-            {/* Panel principal mejorado para desktop */}
+
             <div className="max-w-7xl mx-auto h-full">
-              {/* Estado de carga de preguntas */}
               {cargandoPregunta && (
                 <motion.div
                   className="w-full flex flex-col items-center justify-center bg-blue-50/80 backdrop-blur-sm rounded-lg shadow-md border-2 border-blue-300/50 px-3 sm:px-4 py-3 sm:py-4 mb-3 sm:mb-4 max-w-xl mx-auto"
@@ -622,7 +611,6 @@ export default function Page() {
                 </motion.div>
               )}
 
-              {/* Pregunta activa del backend - MÁS COMPACTA */}
               {!cargandoPregunta && preguntaActiva && (
                 <motion.div
                   className="w-full flex flex-col items-center justify-center bg-white/90 backdrop-blur-sm rounded-lg shadow-md border-2 border-green-400/50 px-3 sm:px-4 py-3 sm:py-4 mb-3 sm:mb-4 max-w-xl mx-auto"
@@ -651,7 +639,6 @@ export default function Page() {
                     {preguntaActiva.pregunta}
                   </span>
 
-                  {/* Opciones de respuesta - MÁS COMPACTAS */}
                   <div className="flex flex-col gap-2 w-full max-w-lg">
                     {preguntaActiva.opciones.map((opcion, idx) => (
                       <motion.label
@@ -689,7 +676,6 @@ export default function Page() {
                     ))}
                   </div>
 
-                  {/* Botón enviar respuesta - MÁS COMPACTO */}
                   {!preguntaActiva.yaRespondida && (
                     <motion.button
                       className="mt-3 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold shadow-md transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-1.5 text-xs sm:text-sm"
@@ -709,7 +695,6 @@ export default function Page() {
                     </motion.button>
                   )}
 
-                  {/* Mensaje de resultado - MÁS COMPACTO */}
                   <AnimatePresence>
                     {mensajeRespuesta && (
                       <motion.div
@@ -730,7 +715,6 @@ export default function Page() {
                     )}
                   </AnimatePresence>
 
-                  {/* Estado de pregunta respondida - MÁS COMPACTO */}
                   {preguntaActiva.yaRespondida && (
                     <motion.div
                       className="mt-2 p-2 bg-blue-100/80 border border-blue-300 rounded-lg"
@@ -753,7 +737,6 @@ export default function Page() {
                 </motion.div>
               )}
 
-              {/* Mensaje cuando no hay preguntas activas - MÁS COMPACTO */}
               {!cargandoPregunta && !preguntaActiva && (
                 <motion.div
                   className="w-full flex flex-col items-center justify-center bg-gray-50/80 backdrop-blur-sm rounded-lg shadow-md border-2 border-gray-300/50 px-3 sm:px-4 py-4 sm:py-6 mb-3 sm:mb-4 max-w-lg mx-auto"
@@ -774,7 +757,6 @@ export default function Page() {
                 </motion.div>
               )}
 
-              {/* ACTUALIZADO: Buscador y título con contador real */}
               <motion.div
                 className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 lg:mb-8 gap-4 lg:gap-6"
                 initial={{ opacity: 0, y: 20 }}
@@ -798,9 +780,7 @@ export default function Page() {
                 />
               </motion.div>
 
-              {/* ACTUALIZADO: Lista de participantes reales */}
               <div className="h-full">
-                {/* Loading state */}
                 {cargandoParticipantes && (
                   <motion.div
                     className="flex justify-center items-center py-20 lg:py-32"
@@ -816,7 +796,6 @@ export default function Page() {
                   </motion.div>
                 )}
 
-                {/* Grid de participantes - Optimizado para desktop */}
                 {!cargandoParticipantes && (
                   <motion.div
                     className="grid gap-4 sm:gap-6 lg:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
@@ -851,7 +830,6 @@ export default function Page() {
                           boxShadow: "0 25px 50px rgba(34, 197, 94, 0.15)",
                         }}
                       >
-                        {/* ACTUALIZADA: Imagen del personaje basada en current_skin */}
                         <motion.div
                           className="relative"
                           whileHover={{ scale: 1.1, rotate: 5 }}
@@ -883,12 +861,10 @@ export default function Page() {
                           <div className="absolute -top-1 -right-1 w-4 h-4 lg:w-5 lg:h-5 bg-green-500 rounded-full border-2 border-white"></div>
                         </motion.div>
 
-                        {/* ACTUALIZADO: Nombre real del participante */}
                         <span className="block text-sm lg:text-base xl:text-lg font-semibold text-green-900 text-center px-2 line-clamp-2">
                           {participante.name}
                         </span>
 
-                        {/* ACTUALIZADO: Stats del personaje del backend - Desktop optimizado */}
                         <div className="flex flex-wrap gap-1.5 lg:gap-2 text-xs lg:text-xs justify-center">
                           <motion.span
                             className="bg-red-100 text-red-700 px-2 lg:px-2.5 py-1 rounded font-bold"
@@ -922,12 +898,10 @@ export default function Page() {
                           </motion.span>
                         </div>
 
-                        {/* NUEVO: Email del participante - Responsive */}
                         <div className="text-xs lg:text-sm text-gray-400 mt-1 truncate max-w-full px-2 text-center">
                           {participante.email}
                         </div>
 
-                        {/* NUEVO: Role badge - Responsive */}
                         <motion.div
                           className={`text-xs lg:text-sm px-2.5 py-1 rounded-full font-bold ${
                             participante.role === "professor"

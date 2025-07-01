@@ -9,7 +9,6 @@ export default function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-  // Efecto para detectar scroll y cambiar el fondo
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
@@ -19,7 +18,6 @@ export default function NavBar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Gestión de tecla Escape para cerrar menú móvil
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && menuOpen) {
@@ -50,7 +48,7 @@ export default function NavBar() {
 
   return (
     <>
-      {/* NavBar principal */}
+      {/* NavBar  */}
       <motion.nav
         className={`fixed top-0 left-0 z-50 w-full transition-all duration-300 ${
           scrolled
@@ -62,7 +60,7 @@ export default function NavBar() {
         transition={{ type: "spring", stiffness: 200, damping: 25 }}
       >
         <div className="flex justify-between items-center px-4 sm:px-6 lg:px-8 py-3 max-w-7xl mx-auto">
-          {/* Logo mejorado */}
+          {/* Logo  */}
           <motion.h1 
             className="text-xl sm:text-2xl font-bold whitespace-nowrap"
             whileHover={{ scale: 1.05 }}
@@ -80,7 +78,7 @@ export default function NavBar() {
             </Link>
           </motion.h1>
 
-          {/* Botón hamburguesa mejorado */}
+          {/* Botón hamburguesa */}
           <motion.button
             className="md:hidden flex flex-col justify-center items-center w-10 h-10 rounded-lg hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-400"
             onClick={() => setMenuOpen(!menuOpen)}
@@ -181,7 +179,7 @@ export default function NavBar() {
         )}
       </AnimatePresence>
 
-      {/* Menú móvil mejorado */}
+      {/* Menú móvil */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div

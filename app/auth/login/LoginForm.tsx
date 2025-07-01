@@ -5,7 +5,7 @@ import Link from "next/link";
 import { FaGoogle, FaRegStar, FaSpinner } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { fadeInUp } from "@/types/types";
-import { getUser, login } from "@/services/authService"; // Asegúrate de importar tu servicio
+import { getUser, login } from "@/services/authService";
 import { useRouter } from "next/navigation";
 
 export default function LoginForm() {
@@ -24,9 +24,7 @@ export default function LoginForm() {
       const response = await login({ email, password });
       const token = response.data.token;
       localStorage.setItem("token", token);
-      console.log("TOKEN JWT:", token);
 
-      // Obtener el usuario y su rol
       const userResponse = await getUser();
       const role = userResponse.data.role;
 

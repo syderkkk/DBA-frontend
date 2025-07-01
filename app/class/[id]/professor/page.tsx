@@ -56,11 +56,10 @@ export default function Page() {
       const response = await generateQuestionWithAI(topic);
       console.log("✅ Respuesta de IA (aiService):", response);
 
-      // Mapear la respuesta del aiService a lo que espera nuestra aplicación
       const generatedQuestion: GeneratedQuestion = {
         question: response.question,
         options: response.options,
-        correctAnswer: response.correctIndex, // aiService devuelve correctIndex
+        correctAnswer: response.correctIndex,
       };
 
       console.log("✅ Pregunta mapeada:", generatedQuestion);
@@ -92,7 +91,6 @@ export default function Page() {
       ),
     [estudiantes, busqueda]
   );
-
   useEffect(() => {
     if (!classId) return;
 
@@ -196,13 +194,12 @@ export default function Page() {
       setEstudiantes(estudiantes.filter((e) => e.id !== id));
       if (seleccionado === id) setSeleccionado(null);
 
-      // Mostrar mensaje de éxito
       alert(`${estudiante.name} ha sido expulsado de la clase correctamente.`);
     } catch {
       alert("Error al expulsar al estudiante");
     }
   };
-  // Función para cerrar la pregunta activa
+
   const cerrarPreguntaActiva = async (): Promise<void> => {
     if (!preguntaActiva) return;
 
@@ -238,7 +235,6 @@ export default function Page() {
       const response = await createQuestion(classId, payload);
       console.log("✅ Pregunta creada:", response);
 
-      // 2. Obtener las preguntas actualizadas del backend
       console.log("📤 Obteniendo preguntas del backend...");
       const preguntasResponse = await getQuestionsByClassroom(classId);
       const preguntas = preguntasResponse.data;
@@ -263,7 +259,6 @@ export default function Page() {
         timestamp: Date.now(),
       });
 
-      // Agregar a preguntas recientes
       setPreguntasEnviadas([
         `${pregunta.substring(0, 40)}${pregunta.length > 40 ? "..." : ""}`,
         ...preguntasEnviadas,
@@ -278,13 +273,11 @@ export default function Page() {
     if (!estudianteId) return;
 
     try {
-      // Recompensar al estudiante (oro y experiencia)
       await rewardStudent(classId, estudianteId.toString(), {
-        gold: 10, // +10 oro por respuesta correcta
-        experience: 25, // +25 XP por respuesta correcta
+        gold: 10,
+        experience: 25,
       });
 
-      // Actualizar la lista local de estudiantes
       setEstudiantes((prevEstudiantes) =>
         prevEstudiantes.map((e) =>
           e.id === estudianteId
@@ -292,17 +285,14 @@ export default function Page() {
                 ...e,
                 gold: e.gold + 10,
                 experience: e.experience + 25,
-                // Calcular nuevo nivel si es necesario (ejemplo: cada 100 XP = 1 nivel)
                 level: Math.floor((e.experience + 25) / 100) + 1,
               }
             : e
         )
       );
 
-      // Limpiar selección
       setSeleccionado(null);
 
-      // Mostrar mensaje de éxito
       const estudiante = estudiantes.find((e) => e.id === estudianteId);
       if (estudiante) {
         alert(
@@ -314,7 +304,6 @@ export default function Page() {
     }
   };
 
-  // Función para manejar respuesta incorrecta
   const manejarRespuestaIncorrecta = async (estudianteId: number) => {
     if (!estudianteId) return;
 
@@ -336,7 +325,6 @@ export default function Page() {
 
       setSeleccionado(null);
 
-      // Mostrar mensaje
       const estudiante = estudiantes.find((e) => e.id === estudianteId);
       if (estudiante) {
         alert(`💔 ${estudiante.name} respondió incorrectamente.\n-10 HP`);
@@ -346,17 +334,14 @@ export default function Page() {
     }
   };
 
-  // Eliminar estudiante seleccionado
   const limpiarSeleccionado = () => {
     setSeleccionado(null);
   };
 
-  // Funciones para agregar/quitar opciones
   const estudianteSeleccionado = estudiantes.find((e) => e.id === seleccionado);
 
   return (
     <div className="relative min-h-screen">
-      {/* Fondo con imagen y overlay */}
       <div
         className="fixed inset-0 z-0 bg-cover bg-center"
         style={{
@@ -399,7 +384,6 @@ export default function Page() {
 
             {/* Panel principal */}
             <section className="flex flex-col items-center px-4 py-10 bg-transparent">
-              {/* EXISTENTE: Pregunta activa con datos del backend */}
               {preguntaActiva && (
                 <ActiveQuestion
                   preguntaActiva={preguntaActiva}
@@ -407,7 +391,6 @@ export default function Page() {
                 />
               )}
 
-              {/* ACTUALIZADO: Estudiante seleccionado con skins correctas */}
               {estudianteSeleccionado && (
                 <SelectedStudent
                   estudiante={estudianteSeleccionado}
@@ -417,7 +400,6 @@ export default function Page() {
                 />
               )}
 
-              {/* Buscador y título */}
               <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 max-w-4xl mx-auto gap-4 w-full">
                 <span className="px-5 py-2 rounded-full bg-black/70 text-white shadow-lg backdrop-blur-sm flex flex-row items-center gap-2">
                   <FaUsers className="text-green-500 text-2xl" />

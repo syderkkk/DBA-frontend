@@ -40,7 +40,6 @@ export default function QRModal({ isOpen, onClose, codigoClase }: QRModalProps) 
           exit={{ scale: 0.9, opacity: 0 }}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Header compacto */}
           <div className="flex items-center gap-2 mb-4">
             <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
               <FaQrcode className="text-white text-sm" />
@@ -50,7 +49,6 @@ export default function QRModal({ isOpen, onClose, codigoClase }: QRModalProps) 
             </h2>
           </div>
 
-          {/* Código compacto */}
           <div className="text-xl font-mono text-gray-800 mb-4 flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-xl">
             <span>{codigoClase}</span>
             <button
@@ -61,7 +59,7 @@ export default function QRModal({ isOpen, onClose, codigoClase }: QRModalProps) 
             </button>
           </div>
 
-          {/* QR Code más pequeño */}
+
           <div className="mb-4 p-2 bg-white rounded-xl shadow-md">
             <Image
               src={`https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(
@@ -74,12 +72,10 @@ export default function QRModal({ isOpen, onClose, codigoClase }: QRModalProps) 
             />
           </div>
 
-          {/* Descripción compacta */}
           <p className="text-gray-600 text-xs text-center mb-4">
             Escanea para unirte
           </p>
 
-          {/* Botón cerrar */}
           <button
             className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-lg transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-red-400"
             onClick={onClose}

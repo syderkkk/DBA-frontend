@@ -114,7 +114,7 @@ function Sidebar({
           CLASSCRAFT
         </motion.span>
 
-        {/* Botón cerrar en móvil */}
+
         <motion.button
           className="lg:hidden text-gray-500 hover:text-gray-700 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
           onClick={closeSidebar}
@@ -127,7 +127,6 @@ function Sidebar({
         </motion.button>
       </div>
 
-      {/* Información del usuario */}
       {user && (
         <motion.div
           className="px-6 py-4 border-b border-gray-200/50"
@@ -241,18 +240,15 @@ export default function Page() {
     expiration_date: "",
   });
 
-  // Estados para modal de código y QR
   const [showCodeModal, setShowCodeModal] = useState(false);
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  // Referencias para gestión de foco
   const sidebarRef = useRef<HTMLElement>(null);
   const hamburgerButtonRef = useRef<HTMLButtonElement>(null);
 
   const router = useRouter();
 
-  // Función para cerrar sidebar
   const closeSidebar = () => {
     setSidebarOpen(false);
     setTimeout(() => {
@@ -260,7 +256,6 @@ export default function Page() {
     }, 100);
   };
 
-  // Gestión de responsive sidebar
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 1024) {
@@ -459,7 +454,6 @@ export default function Page() {
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50">
-      {/* Fondo con imagen y overlay */}
       <div
         className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
         style={{
@@ -469,7 +463,6 @@ export default function Page() {
       />
       <div className="fixed inset-0 z-10 bg-gradient-to-b from-white/70 via-white/50 to-white/80 backdrop-blur-[1px] pointer-events-none" />
 
-      {/* Botón hamburguesa para móvil */}
       <AnimatePresence>
         {!sidebarOpen && (
           <motion.button
@@ -490,7 +483,6 @@ export default function Page() {
       </AnimatePresence>
 
       <div className="relative z-20 flex min-h-screen">
-        {/* Overlay para sidebar móvil */}
         <AnimatePresence>
           {sidebarOpen && (
             <motion.div
@@ -509,7 +501,7 @@ export default function Page() {
         <main className="flex-1 lg:ml-64 min-h-screen">
           <div className="h-full px-4 sm:px-6 lg:px-8 py-6 lg:py-8 pt-20 lg:pt-6">
             <div className="max-w-7xl mx-auto">
-              {/* Header responsive */}
+              {/* Header */}
               <motion.header
                 className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-6 sm:mb-8 gap-4"
                 initial={{ opacity: 0, y: -20 }}

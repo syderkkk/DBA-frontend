@@ -3,7 +3,6 @@ import apiClient from "./apiClient";
 export interface CharacterData {
   name: string;
   age: number;
-  // Add other character properties as needed
 }
 
 export const createCharacter = (classroomId: string, data: CharacterData) => apiClient.post(`/classroom/${classroomId}/character`, data);

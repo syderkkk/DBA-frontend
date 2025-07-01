@@ -6,7 +6,6 @@ export interface ClassroomData {
   max_capacity: number;
   start_date?: string;
   expiration_date?: string;
-  // Add other classroom properties as needed
 }
 
 export const createClassroom = (data: ClassroomData) => apiClient.post("/classroom", data);

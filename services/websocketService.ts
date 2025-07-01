@@ -40,10 +40,8 @@ interface QuestionClosedData {
     event_type: string;
 }
 
-// ✅ TIPOS para estados de conexión
 type ConnectionState = 'connecting' | 'connected' | 'unavailable' | 'failed' | 'disconnected';
 
-// ✅ TIPOS para eventos de Pusher
 interface PusherConnectionStates {
     previous: ConnectionState;
     current: ConnectionState;
@@ -57,7 +55,6 @@ interface PusherError {
     };
 }
 
-// ✅ CONFIGURACIÓN del WebSocket Service con tipado fuerte
 class WebSocketService {
     private pusher: Pusher | null = null;
     private channel: Channel | null = null;
@@ -69,7 +66,6 @@ class WebSocketService {
         this.initializePusher();
     }
 
-    // ✅ INICIALIZAR Pusher con Reverb (sin any)
     private initializePusher(): void {
         if (this.isInitialized) return;
 
@@ -83,18 +79,16 @@ class WebSocketService {
                 throw new Error('Variables de entorno de Reverb no configuradas correctamente');
             }
 
-            // Configuración para Laravel Reverb
             this.pusher = new Pusher(appKey, {
                 wsHost: host,
                 wsPort: parseInt(port) || 8080,
                 wssPort: parseInt(port) || 8080,
                 forceTLS: scheme === 'https',
                 enabledTransports: ['ws', 'wss'],
-                cluster: '', // No necesario para Reverb
-                authEndpoint: '/api/broadcasting/auth', // Para canales privados (futuro)
+                cluster: '',
+                authEndpoint: '/api/broadcasting/auth',
             });
 
-            // 🔧 DEBUG en desarrollo con tipado fuerte
             if (process.env.NODE_ENV === 'development') {
                 this.pusher.connection.bind('connected', () => {
                     this.connectionState = 'connected';
@@ -123,7 +117,6 @@ class WebSocketService {
         }
     }
 
-    // ✅ CONECTAR a un aula específica (sin any)
     joinClassroom(classroomId: string): Channel | null {
         if (!this.isInitialized) {
             this.initializePusher();
@@ -139,18 +132,14 @@ class WebSocketService {
             return this.channel;
         }
 
-        // Desconectar canal anterior si existe
         this.disconnect();
 
         try {
             this.currentClassroomId = classroomId;
-            // 👇 CAMBIA ESTA LÍNEA
             this.channel = this.pusher.subscribe(`classroom.${classroomId}`);
-            // 👆 DEBE TENER EL PREFIJO 'private-'
 
             console.log(`📡 Conectando a aula: ${classroomId}`);
 
-            // ✅ EVENTOS de estado del canal con tipado
             this.channel.bind('pusher:subscription_succeeded', () => {
                 console.log(`✅ Suscripción exitosa a aula: ${classroomId}`);
             });
@@ -166,7 +155,6 @@ class WebSocketService {
         }
     }
 
-    // ✅ ESCUCHAR eventos de preguntas (tipado fuerte)
     onQuestionCreated(callback: (data: QuestionData) => void): void {
         if (this.channel) {
             this.channel.bind('question.created', callback);
@@ -185,7 +173,6 @@ class WebSocketService {
         }
     }
 
-    // ✅ ESCUCHAR eventos de usuarios (tipado fuerte)
     onUserJoined(callback: (data: UserData) => void): void {
         if (this.channel) {
             this.channel.bind('user.joined', callback);
@@ -233,25 +220,21 @@ class WebSocketService {
         }
     }
 
-    // ✅ DESCONECTAR del aula actual
     disconnect(): void {
         if (this.channel && this.pusher) {
             console.log(`📡 Desconectando de aula: ${this.currentClassroomId}`);
 
-            // Desvincularse de todos los eventos
             this.offQuestionCreated();
             this.offQuestionClosed();
             this.offUserJoined();
             this.offUserLeft();
 
-            // Cancelar suscripción
             this.pusher.unsubscribe(this.channel.name);
             this.channel = null;
         }
         this.currentClassroomId = null;
     }
 
-    // ✅ INFORMACIÓN del estado de conexión (tipado fuerte)
     isConnected(): boolean {
         return this.pusher?.connection?.state === 'connected';
     }
@@ -264,7 +247,6 @@ class WebSocketService {
         return this.currentClassroomId;
     }
 
-    // ✅ TESTING de conexión (sin any)
     testConnection(): void {
         if (this.isConnected()) {
             console.log('✅ WebSocket está conectado');
@@ -277,7 +259,6 @@ class WebSocketService {
         }
     }
 
-    // ✅ OBTENER información de debugging
     getDebugInfo(): {
         isInitialized: boolean;
         isConnected: boolean;
@@ -294,7 +275,6 @@ class WebSocketService {
         };
     }
 
-    // ✅ CLEANUP completo al cerrar la aplicación
     destroy(): void {
         console.log('🧹 Limpiando WebSocket Service...');
         this.disconnect();
@@ -309,10 +289,8 @@ class WebSocketService {
     }
 }
 
-// ✅ SINGLETON - Una sola instancia para toda la app
 const websocketService = new WebSocketService();
 
-// ✅ EXPORTAR tipos para usar en otros archivos
 export type {
     QuestionData,
     UserData,
@@ -322,5 +300,4 @@ export type {
     PusherConnectionStates
 };
 
-// ✅ EXPORTAR instancia singleton
 export default websocketService;

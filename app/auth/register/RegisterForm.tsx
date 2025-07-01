@@ -28,7 +28,6 @@ export default function RegisterForm() {
   const role = searchParams.get("role") || "student";
   const router = useRouter();
 
-  // Estados para el formulario
   const [formData, setFormData] = useState<RegisterData>({
     name: "",
     email: "",
@@ -37,13 +36,11 @@ export default function RegisterForm() {
     role: role,
   });
 
-  // Estados para UI
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Manejar cambios en los inputs
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -51,7 +48,6 @@ export default function RegisterForm() {
       [name]: value
     }));
 
-    // Limpiar errores cuando el usuario empiece a escribir
     if (errors[name as keyof ValidationErrors]) {
       setErrors(prev => ({
         ...prev,
@@ -60,7 +56,6 @@ export default function RegisterForm() {
     }
   };
 
-  // Validación del formulario en el frontend
   const validateForm = (): boolean => {
     const newErrors: ValidationErrors = {};
 
@@ -88,13 +83,11 @@ export default function RegisterForm() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Manejar envío del formulario
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setGeneralError(null);
     setSuccessMessage(null);
 
-    // Validar formulario
     if (!validateForm()) {
       return;
     }
@@ -112,14 +105,11 @@ export default function RegisterForm() {
 
       console.log("✅ Usuario registrado exitosamente:", response.data);
 
-      // Guardar token
       const token = response.data.access_token;
       localStorage.setItem("token", token);
 
-      // Mostrar mensaje de éxito
       setSuccessMessage("¡Usuario registrado exitosamente! Redirigiendo...");
 
-      // Redirigir según el rol después de un breve delay
       setTimeout(() => {
         if (formData.role === "student") {
           router.push("/dashboard/student");

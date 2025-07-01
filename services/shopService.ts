@@ -56,14 +56,12 @@ export interface ShopCharacter {
   updated_at: string;
 }
 
-// API Response wrapper (común en APIs)
 export interface ApiResponse<T> {
   data: T;
   message?: string;
   status: number;
 }
 
-// Funciones del servicio con tipos correctos
 export const getShopSkins = (): Promise<{ data: CharacterSkin[] }> => {
   return apiClient.get('/shop/skins');
 };

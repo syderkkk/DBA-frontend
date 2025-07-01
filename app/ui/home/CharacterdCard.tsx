@@ -57,7 +57,6 @@ export default function CharacterCard({
         </ul>
       </motion.div>
 
-      {/* Modal de imagen */}
       <AnimatePresence>
         {isModalOpen && (
           <motion.div
@@ -75,7 +74,7 @@ export default function CharacterCard({
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
               transition={{ type: "spring", stiffness: 200, damping: 20 }}
-              onClick={(e) => e.stopPropagation()} // Evita cerrar al hacer clic en la imagen
+              onClick={(e) => e.stopPropagation()}
             />
           </motion.div>
         )}

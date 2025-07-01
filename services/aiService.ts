@@ -19,7 +19,6 @@ export async function generateQuestionWithAI(topic: string): Promise<GeneratedQu
   try {
     console.log('🤖 Generando pregunta con IA para el tema:', topic);
     
-    // Llamar a nuestra API route interna
     const response = await fetch('/api/generate-question', {
       method: 'POST',
       headers: {
@@ -37,7 +36,7 @@ export async function generateQuestionWithAI(topic: string): Promise<GeneratedQu
     return {
       question: data.question,
       options: [data.option_1, data.option_2, data.option_3, data.option_4],
-      correctIndex: data.correct_option - 1, // Convertir de 1-4 a 0-3
+      correctIndex: data.correct_option - 1,
       explanation: data.explanation,
     };
   } catch (error) {

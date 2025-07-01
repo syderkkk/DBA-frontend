@@ -112,7 +112,6 @@ Genera la pregunta ahora:`;
 
     const geminiData: GeminiResponse = await geminiResponse.json();
     
-    // Extraer la respuesta de texto
     const aiResponse = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
     
     if (!aiResponse) {
@@ -125,16 +124,13 @@ Genera la pregunta ahora:`;
 
     console.log('🤖 Respuesta bruta de Gemini:', aiResponse);
 
-    // Limpiar la respuesta para extraer solo el JSON
     let cleanedResponse = aiResponse.trim();
     
-    // Remover marcadores de código si existen
     cleanedResponse = cleanedResponse.replace(/```json\n?/g, '');
     cleanedResponse = cleanedResponse.replace(/```\n?/g, '');
-    cleanedResponse = cleanedResponse.replace(/^[^{]*/, ''); // Remover texto antes del JSON
-    cleanedResponse = cleanedResponse.replace(/[^}]*$/, ''); // Remover texto después del JSON
+    cleanedResponse = cleanedResponse.replace(/^[^{]*/, '');
+    cleanedResponse = cleanedResponse.replace(/[^}]*$/, '');
 
-    // Parsear la respuesta JSON
     let parsedResponse;
     try {
       parsedResponse = JSON.parse(cleanedResponse);
@@ -142,7 +138,6 @@ Genera la pregunta ahora:`;
       console.error('❌ Error parseando respuesta de Gemini:', cleanedResponse);
       console.error('Error de parseo:', parseError);
       
-      // Fallback: crear pregunta básica
       parsedResponse = {
         question: `¿Cuál de las siguientes afirmaciones sobre ${topic} es correcta?`,
         option_1: "Opción generada automáticamente 1",
@@ -154,7 +149,6 @@ Genera la pregunta ahora:`;
       };
     }
 
-    // Validar que la respuesta tenga todos los campos necesarios
     if (!parsedResponse.question || !parsedResponse.option_1 || !parsedResponse.correct_option) {
       console.warn('⚠️ Respuesta incompleta, usando fallback');
       

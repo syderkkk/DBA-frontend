@@ -39,7 +39,6 @@ export default function SelectedStudent({
 }: SelectedStudentProps) {
   return (
     <div className="w-full bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl shadow-sm p-4 sm:p-6 mb-6">
-      {/* Header con avatar y nombre */}
       <div className="flex items-center gap-4 mb-4">
         <div className="relative">
           <Image
@@ -74,7 +73,6 @@ export default function SelectedStudent({
         </button>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         <div className="bg-white rounded-xl p-3 border border-red-100">
           <div className="flex items-center gap-2 text-red-600 mb-1">
@@ -115,7 +113,6 @@ export default function SelectedStudent({
         </div>
       </div>
 
-      {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-3">
         <button
           onClick={() => onCorrect(estudiante.id)}

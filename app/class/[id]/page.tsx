@@ -7,7 +7,7 @@ import { useEffect } from "react";
 export default function Page({ params }: { params: Promise<{ id: string }> }) {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const { id } = use(params); // Desempaqueta el Promise
+  const { id } = use(params);
 
   useEffect(() => {
     if (!loading) {

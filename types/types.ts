@@ -3,15 +3,12 @@ export interface LoginData {
   password: string;
 }
 
-// Definición de la interfaz User
 export interface User {
   name: string;
   email: string;
   role: string;
 }
 
-
-// Interfaz para las tarjetas de características
 export interface FeatureCardProps {
   title: string;
   description: string;
@@ -19,7 +16,6 @@ export interface FeatureCardProps {
 }
 
 
-// Definición de la interfaz CharacterCardProps
 export interface CharacterCardProps {
   title: string;
   description: string;
@@ -54,11 +50,6 @@ export const fadeInUp = {
     },
   }),
 };
-
-
-
-
-
 
 export interface EstudianteReal {
   id: number;

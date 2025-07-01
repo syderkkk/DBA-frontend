@@ -1,13 +1,12 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { getUser } from "@/services/authService"; // Ajusta la ruta según tu estructura
+import { getUser } from "@/services/authService";
 
 type User = {
   id: string;
   name: string;
   role: "professor" | "student";
-  // Agrega aquí otros campos que necesites
 };
 
 type AuthContextType = {

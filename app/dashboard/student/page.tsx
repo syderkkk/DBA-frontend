@@ -29,21 +29,17 @@ export default function Page() {
   const [joining, setJoining] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Estado para el usuario
   const [user, setUser] = useState<{ name: string; email: string } | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
-  // Estado para las clases del estudiante
   const [classrooms, setClassrooms] = useState<Classroom[]>([]);
   const [loadingClassrooms, setLoadingClassrooms] = useState(true);
 
-  // Modal para mostrar código y QR
   const [showCodeModal, setShowCodeModal] = useState(false);
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
 
   const [copied, setCopied] = useState(false);
 
-  // Referencias para gestión de foco
   const sidebarRef = useRef<HTMLElement>(null);
   const hamburgerButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -71,38 +67,29 @@ export default function Page() {
     };
   }
 
-  // Función para cerrar sidebar y gestionar foco
   const closeSidebar = () => {
     setSidebarOpen(false);
-    // Devolver foco al botón hamburguesa
     setTimeout(() => {
       hamburgerButtonRef.current?.focus();
     }, 100);
   };
 
-  // Función para manejar logout
   const handleLogout = async () => {
     try {
-      // Llamar al endpoint de logout del backend
       await logout();
       console.log("✅ Sesión cerrada correctamente");
     } catch (error) {
       console.error("❌ Error al cerrar sesión:", error);
-      // Continuar con el logout local aunque falle el backend
     } finally {
-      // Limpiar localStorage
       localStorage.removeItem("token");
       
-      // Limpiar estados
       setUser(null);
       setClassrooms([]);
-      
-      // Redirigir al login
+
       router.push("/auth/login");
     }
   };
 
-  // Gestión de foco cuando se abre/cierra el sidebar
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 1024) {
@@ -110,9 +97,7 @@ export default function Page() {
       }
     };
 
-    // Gestión del foco cuando se abre el sidebar
     if (sidebarOpen) {
-      // Cuando se abre, enfoca el primer elemento navegable después de un breve delay
       setTimeout(() => {
         const firstFocusable = sidebarRef.current?.querySelector(
           'button:not([disabled]), a, input:not([disabled]), [tabindex]:not([tabindex="-1"])'
@@ -127,7 +112,6 @@ export default function Page() {
     return () => window.removeEventListener("resize", handleResize);
   }, [sidebarOpen]);
 
-  // Gestión de teclas de escape y prevención de scroll
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && sidebarOpen) {
@@ -137,7 +121,6 @@ export default function Page() {
 
     if (sidebarOpen) {
       document.addEventListener("keydown", handleEscape);
-      // Prevenir scroll del body en móvil
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";
@@ -149,7 +132,6 @@ export default function Page() {
     };
   }, [sidebarOpen]);
 
-  // Cargar datos del usuario
   useEffect(() => {
     const loadUserData = async () => {
       try {
@@ -158,7 +140,6 @@ export default function Page() {
         console.log("✅ Usuario cargado:", response.data);
       } catch (error) {
         console.error("❌ Error al cargar usuario:", error);
-        // Si hay error de autenticación, redirigir al login
         router.push("/auth/login");
       } finally {
         setLoadingUser(false);
@@ -168,7 +149,6 @@ export default function Page() {
     loadUserData();
   }, [router]);
 
-  // Cargar clases del usuario
   useEffect(() => {
     setLoadingClassrooms(true);
     getMyClassrooms()
@@ -230,14 +210,12 @@ export default function Page() {
     return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
   }
 
-  // Función para obtener el primer nombre
   const getFirstName = (fullName: string): string => {
     return fullName.split(' ')[0];
   };
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50">
-      {/* Fondo con imagen y overlay */}
       <div
         className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
         style={{
@@ -247,7 +225,6 @@ export default function Page() {
       />
       <div className="fixed inset-0 z-10 bg-gradient-to-b from-white/70 via-white/50 to-white/80 backdrop-blur-[1px] pointer-events-none" />
 
-      {/* Botón hamburguesa para móvil - Solo mostrar cuando el sidebar esté cerrado */}
       <AnimatePresence>
         {!sidebarOpen && (
           <motion.button
@@ -268,7 +245,6 @@ export default function Page() {
       </AnimatePresence>
 
       <div className="relative z-20 flex min-h-screen">
-        {/* Overlay para sidebar móvil */}
         <AnimatePresence>
           {sidebarOpen && (
             <motion.div
@@ -281,7 +257,6 @@ export default function Page() {
           )}
         </AnimatePresence>
 
-        {/* CORREGIDO: Sidebar con altura completa fija */}
         <motion.aside
           ref={sidebarRef}
           className={`
@@ -292,7 +267,6 @@ export default function Page() {
           role="navigation"
           aria-label="Menú principal"
         >
-          {/* Header del sidebar */}
           <div className="flex items-center justify-between px-6 py-6 border-b border-gray-200/50">
             <motion.span
               className="text-xl font-bold tracking-tight font-sans select-none text-transparent bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text drop-shadow cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-400 rounded-lg"
@@ -314,7 +288,6 @@ export default function Page() {
               CLASSCRAFT
             </motion.span>
 
-            {/* Botón cerrar en móvil */}
             <motion.button
               className="lg:hidden text-gray-500 hover:text-gray-700 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
               onClick={closeSidebar}
@@ -327,7 +300,6 @@ export default function Page() {
             </motion.button>
           </div>
 
-          {/* Información del usuario */}
           {!loadingUser && user && (
             <motion.div
               className="px-6 py-4 border-b border-gray-200/50"
@@ -371,7 +343,7 @@ export default function Page() {
                   icon: FaSignOutAlt,
                   label: "Cerrar sesión",
                   href: "#",
-                  action: "logout", // Cambiar a acción logout
+                  action: "logout",
                 },
               ].map((item, idx) => (
                 <motion.li
@@ -481,7 +453,6 @@ export default function Page() {
           </div>
         </motion.aside>
 
-        {/* CORREGIDO: Contenido principal con margin adecuado */}
         <main className="flex-1 lg:ml-64 min-h-screen">
           <div className="h-full px-4 sm:px-6 lg:px-8 py-6 lg:py-8 pt-20 lg:pt-6">
             {/* Header */}

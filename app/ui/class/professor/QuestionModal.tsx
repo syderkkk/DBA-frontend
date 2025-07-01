@@ -85,24 +85,19 @@ export default function QuestionModal({
       console.log("   - options originales:", result.options);
       console.log("   - correctAnswer original:", result.correctAnswer);
 
-      // 🎲 MEZCLAR LAS OPCIONES para variar la respuesta correcta
       const opcionesOriginales = [...result.options];
 
-      // Crear array de opciones con sus índices originales
       const opcionesConIndices = opcionesOriginales.map((opcion, index) => ({
         texto: opcion,
         esCorrecta: index === result.correctAnswer,
       }));
 
-      // Mezclar el array
       const opcionesMezcladas = [...opcionesConIndices].sort(
         () => Math.random() - 0.5
       );
 
-      // Extraer solo los textos mezclados
       const nuevasOpciones = opcionesMezcladas.map((item) => item.texto);
 
-      // Encontrar el nuevo índice de la respuesta correcta
       const nuevoIndiceCorrecta = opcionesMezcladas.findIndex(
         (item) => item.esCorrecta
       );
@@ -114,7 +109,6 @@ export default function QuestionModal({
         nuevasOpciones[nuevoIndiceCorrecta]
       );
 
-      // Aplicar al estado
       setPregunta(result.question);
       setOpciones(nuevasOpciones);
       setCorrectOption(nuevoIndiceCorrecta);
@@ -147,7 +141,6 @@ export default function QuestionModal({
           exit={{ scale: 0.95, opacity: 0 }}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Header compacto */}
           <div className="flex items-center justify-between mb-3 sm:mb-4">
             <h2 className="text-base sm:text-lg font-bold text-transparent bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text">
               Crear Pregunta Quiz
@@ -160,7 +153,6 @@ export default function QuestionModal({
             </button>
           </div>
 
-          {/* IA Generator compacto */}
           <motion.div
             className="mb-4 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200"
             initial={{ opacity: 0, y: -10 }}
@@ -174,7 +166,6 @@ export default function QuestionModal({
               </label>
             </div>
 
-            {/* Texto explicativo compacto */}
             <motion.div
               className="mb-2 p-2 bg-blue-100/50 rounded-lg"
               initial={{ opacity: 0 }}
@@ -227,9 +218,7 @@ export default function QuestionModal({
             </div>
           </motion.div>
 
-          {/* Form manual compacto */}
           <div className="space-y-3 sm:space-y-4">
-            {/* Pregunta */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -248,7 +237,6 @@ export default function QuestionModal({
               />
             </motion.div>
 
-            {/* Opciones responsivas */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -285,7 +273,7 @@ export default function QuestionModal({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5 + idx * 0.1 }}
                   >
-                    {/* Botón de selección responsivo */}
+
                     <motion.button
                       type="button"
                       onClick={() => setCorrectOption(idx)}
@@ -303,7 +291,6 @@ export default function QuestionModal({
                       {String.fromCharCode(65 + idx)}
                     </motion.button>
 
-                    {/* Input de texto responsivo */}
                     <div className="flex-1 min-w-0">
                       <textarea
                         value={opcion}
@@ -319,7 +306,6 @@ export default function QuestionModal({
                       />
                     </div>
 
-                    {/* Botón eliminar */}
                     {opciones.length > 2 && (
                       <motion.button
                         onClick={() => quitarOpcion(idx)}
@@ -335,7 +321,6 @@ export default function QuestionModal({
                 ))}
               </div>
 
-              {/* Indicador de respuesta correcta compacto */}
               {correctOption !== null && (
                 <motion.div
                   className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg"
@@ -357,8 +342,7 @@ export default function QuestionModal({
               )}
             </motion.div>
           </div>
-
-          {/* Botones responsivos */}
+          
           <motion.div
             className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-4 sm:mt-5 pt-3 border-t border-gray-200"
             initial={{ opacity: 0, y: 20 }}

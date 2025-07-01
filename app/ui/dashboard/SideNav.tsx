@@ -25,7 +25,6 @@ export default function SideNav() {
 
   return (
     <>
-      {/* Mobile toggle button */}
       <button
         className="fixed top-4 left-4 z-50 p-2 bg-blue-600 text-white rounded-md shadow-md md:hidden"
         onClick={() => setIsSideNavOpen(!isSideNavOpen)}
@@ -34,7 +33,6 @@ export default function SideNav() {
         ☰
       </button>
 
-      {/* Overlay */}
       {isSideNavOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm z-30 md:hidden"
@@ -43,7 +41,6 @@ export default function SideNav() {
         />
       )}
 
-      {/* Sidebar */}
       <aside
         className={`fixed top-0 left-0 h-full w-16 bg-gradient-to-b from-blue-600 to-blue-800 shadow-xl transform transition-transform duration-300 z-40 ${
           isSideNavOpen ? 'translate-x-0' : '-translate-x-full'
@@ -55,7 +52,6 @@ export default function SideNav() {
             <span className="text-blue-600 text-2xl font-extrabold">L</span>
           </div>
 
-          {/* Navigation */}
           <nav className="flex flex-col space-y-6 w-full items-center">
             {menuItems.map(({ key, icon, submenu }) => (
               <div key={key} className="relative group">
@@ -70,7 +66,7 @@ export default function SideNav() {
                   {icon}
                 </button>
 
-                {/* Submenu */}
+
                 {activeMenu === key && (
                   <div className="absolute left-16 top-1 bg-white rounded-md shadow-lg p-4 flex flex-col gap-2 w-40 animate-slide-in z-50">
                     {submenu.map((item, idx) => (
@@ -89,7 +85,6 @@ export default function SideNav() {
         </div>
       </aside>
 
-      {/* Custom animation */}
       <style jsx>{`
         .animate-slide-in {
           animation: slideIn 0.2s ease-out forwards;

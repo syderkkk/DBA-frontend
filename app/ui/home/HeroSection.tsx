@@ -9,7 +9,7 @@ export default function HeroSection() {
       id="home"
       className="relative flex items-center justify-center w-full min-h-[60vh] sm:min-h-[80vh] lg:min-h-[100vh] overflow-hidden mb-2"
     >
-      {/* Fondo solo en la sección */}
+      {/* Fondo */}
       <motion.div 
         className="absolute inset-0 z-0"
         initial={{ scale: 1.1, opacity: 0 }}
@@ -24,9 +24,9 @@ export default function HeroSection() {
           priority
           sizes="100vw"
         />
-        {/* Gradiente blanco mejorado */}
+        {/* Gradiente blanco */}
         <div className="absolute bottom-0 left-0 w-full h-[15%] pointer-events-none bg-gradient-to-t from-white/95 via-white/70 to-transparent" />
-        {/* Overlay sutil para mejor contraste */}
+        {/* Overlay  */}
         <div className="absolute inset-0 bg-black/20 pointer-events-none" />
       </motion.div>
 

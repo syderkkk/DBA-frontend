@@ -26,18 +26,15 @@ import {
   UserSkin,
 } from "@/services/shopService";
 
-// Función para obtener la URL de la imagen basada en el skin_code
 const getSkinImageUrl = (skinCode: string): string => {
   return `/skins/${skinCode}.png`;
 };
 
-// Función para manejar errores de imagen
 const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
   const target = e.target as HTMLImageElement;
   target.src = "/skins/default_warrior.png";
 };
 
-// Sidebar responsive para la tienda
 function Sidebar({
   sidebarOpen,
   closeSidebar,
@@ -57,7 +54,6 @@ function Sidebar({
       role="navigation"
       aria-label="Menú de la tienda"
     >
-      {/* Header del sidebar */}
       <div className="flex items-center justify-between px-6 py-6 border-b border-gray-200/50">
         <motion.span
           className="text-xl font-bold tracking-tight font-sans select-none text-transparent bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text drop-shadow cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-400 rounded-lg"
@@ -79,7 +75,6 @@ function Sidebar({
           CLASSCRAFT
         </motion.span>
 
-        {/* Botón cerrar en móvil */}
         <motion.button
           className="lg:hidden text-gray-500 hover:text-gray-700 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
           onClick={closeSidebar}
@@ -93,7 +88,6 @@ function Sidebar({
       </div>
 
       <nav className="flex-1 px-4 py-6 overflow-y-auto" role="navigation">
-        {/* Navegación principal */}
         <div className="mb-4">
           <div className="mb-2 px-3 text-xs text-gray-600 uppercase tracking-wider font-bold">
             Navegación
@@ -121,7 +115,6 @@ function Sidebar({
           </ul>
         </div>
 
-        {/* Categorías */}
         <div>
           <div className="mb-2 px-3 text-xs text-gray-600 uppercase tracking-wider font-bold">
             Categorías
@@ -146,7 +139,6 @@ function Sidebar({
 }
 
 export default function Page() {
-  // Estados principales
   const [shopSkins, setShopSkins] = useState<CharacterSkin[]>([]);
   const [userSkins, setUserSkins] = useState<UserSkin[]>([]);
   const [userGold, setUserGold] = useState<number>(0);
@@ -155,17 +147,14 @@ export default function Page() {
   const [changing, setChanging] = useState<string | null>(null);
   const [currentSkin, setCurrentSkin] = useState<string | null>(null);
 
-  // Estados para UI responsive
   const [activeTab, setActiveTab] = useState<"shop" | "inventory">("shop");
   const [message, setMessage] = useState<string | null>(null);
   const [messageType, setMessageType] = useState<"success" | "error">("success");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Referencias para gestión de foco
   const sidebarRef = useRef<HTMLElement>(null);
   const hamburgerButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Función para cerrar sidebar
   const closeSidebar = () => {
     setSidebarOpen(false);
     setTimeout(() => {
@@ -173,7 +162,6 @@ export default function Page() {
     }, 100);
   };
 
-  // Gestión de responsive sidebar
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 1024) {
@@ -196,7 +184,6 @@ export default function Page() {
     return () => window.removeEventListener("resize", handleResize);
   }, [sidebarOpen]);
 
-  // Gestión de teclas escape
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && sidebarOpen) {
@@ -217,7 +204,6 @@ export default function Page() {
     };
   }, [sidebarOpen]);
 
-  // Cargar datos iniciales
   useEffect(() => {
     loadAllData();
   }, []);
@@ -232,7 +218,6 @@ export default function Page() {
       setUserSkins(userSkinsResponse.data);
       setUserGold(goldResponse.data.gold);
 
-      // Encontrar la skin actualmente equipada
       const equippedSkin = userSkinsResponse.data.find((skin: UserSkin) => skin.is_equipped);
       setCurrentSkin(equippedSkin?.skin_code || null);
 
@@ -250,24 +235,20 @@ export default function Page() {
     }
   };
 
-  // Función para mostrar mensajes
   const showMessage = (msg: string, type: "success" | "error") => {
     setMessage(msg);
     setMessageType(type);
     setTimeout(() => setMessage(null), 5000);
   };
 
-  // Verificar si el usuario ya posee una skin
   const ownsSkin = (skinCode: string): boolean => {
     return userSkins.some((skin) => skin.skin_code === skinCode);
   };
 
-  // Verificar si una skin está equipada actualmente
   const isSkinEquipped = (skinCode: string): boolean => {
     return currentSkin === skinCode;
   };
 
-  // Comprar skin
   const handlePurchaseSkin = async (skin: CharacterSkin): Promise<void> => {
     if (userGold < skin.price) {
       showMessage("No tienes suficiente oro para comprar esta skin", "error");
@@ -297,7 +278,6 @@ export default function Page() {
     }
   };
 
-  // Cambiar skin activa
   const handleChangeSkin = async (skin: UserSkin) => {
     if (isSkinEquipped(skin.skin_code)) {
       showMessage("Esta skin ya está equipada", "error");
@@ -319,13 +299,11 @@ export default function Page() {
     }
   };
 
-  // Recargar solo las skins del usuario
   const loadUserSkins = async () => {
     try {
       const response = await getUserSkins();
       setUserSkins(response.data);
       
-      // Actualizar la skin actual
       const equippedSkin = response.data.find((skin: UserSkin) => skin.is_equipped);
       setCurrentSkin(equippedSkin?.skin_code || null);
     } catch (error) {
@@ -371,7 +349,6 @@ export default function Page() {
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50">
-      {/* Fondo con imagen y overlay */}
       <div
         className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
         style={{
@@ -381,7 +358,6 @@ export default function Page() {
       />
       <div className="fixed inset-0 z-10 bg-gradient-to-b from-white/70 via-white/50 to-white/80 backdrop-blur-[1px] pointer-events-none" />
 
-      {/* Botón hamburguesa para móvil */}
       <AnimatePresence>
         {!sidebarOpen && (
           <motion.button
@@ -402,7 +378,6 @@ export default function Page() {
       </AnimatePresence>
 
       <div className="relative z-20 flex min-h-screen">
-        {/* Overlay para sidebar móvil */}
         <AnimatePresence>
           {sidebarOpen && (
             <motion.div
@@ -420,7 +395,6 @@ export default function Page() {
         <main className="flex-1 lg:ml-64 min-h-screen">
           <div className="h-full px-4 sm:px-6 lg:px-8 py-6 lg:py-8 pt-20 lg:pt-6">
             <div className="max-w-7xl mx-auto">
-              {/* Header responsive con fondo mejorado */}
               <motion.header
                 className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-6 sm:mb-8 gap-4"
                 initial={{ opacity: 0, y: -20 }}
@@ -446,13 +420,12 @@ export default function Page() {
                       Personaliza tu personaje con increíbles skins
                     </p>
                     
-                    {/* Decoración adicional */}
                     <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-green-400 to-blue-400 rounded-full opacity-60 animate-pulse"></div>
                     <div className="absolute -bottom-1 -left-1 w-3 h-3 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full opacity-40 animate-pulse" style={{ animationDelay: '0.5s' }}></div>
                   </motion.div>
                 </div>
 
-                {/* Oro del usuario - responsive */}
+
                 <motion.div
                   className="flex items-center gap-2 bg-gradient-to-r from-yellow-100 to-amber-100 border-2 border-yellow-400 rounded-full px-4 sm:px-6 py-2 sm:py-3 shadow-lg w-full sm:w-auto justify-center sm:justify-start"
                   initial={{ opacity: 0, scale: 0.9 }}
@@ -467,7 +440,6 @@ export default function Page() {
                 </motion.div>
               </motion.header>
 
-              {/* Mensajes */}
               <AnimatePresence>
                 {message && (
                   <motion.div
@@ -494,7 +466,6 @@ export default function Page() {
                 )}
               </AnimatePresence>
 
-              {/* Tabs responsive */}
               <motion.div
                 className="flex gap-2 mb-6 sm:mb-8 overflow-x-auto pb-2"
                 initial={{ opacity: 0, y: 20 }}
@@ -533,7 +504,6 @@ export default function Page() {
                 </motion.button>
               </motion.div>
 
-              {/* Contenido de las tabs */}
               <AnimatePresence mode="wait">
                 {activeTab === "shop" && (
                   <motion.div
@@ -555,7 +525,6 @@ export default function Page() {
                           transition={{ delay: index * 0.05 }}
                           layout
                         >
-                          {/* Imagen de la skin */}
                           <div className="relative h-40 sm:h-48 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
                             <Image
                               src={getSkinImageUrl(skin.skin_code)}
@@ -566,7 +535,6 @@ export default function Page() {
                               onError={handleImageError}
                             />
 
-                            {/* Badge de estado */}
                             {ownsSkin(skin.skin_code) && (
                               <motion.div
                                 className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold shadow-lg"
@@ -578,7 +546,6 @@ export default function Page() {
                               </motion.div>
                             )}
 
-                            {/* Precio en overlay */}
                             <div className="absolute bottom-2 left-2 bg-black/70 backdrop-blur-sm text-white px-2 py-1 rounded-lg flex items-center gap-1">
                               <FaCoins className="text-yellow-400 text-xs" />
                               <span className="text-xs font-bold">
@@ -587,7 +554,6 @@ export default function Page() {
                             </div>
                           </div>
 
-                          {/* Información de la skin */}
                           <div className="p-3 sm:p-4">
                             <h3 className="font-bold text-base sm:text-lg text-gray-800 mb-1 sm:mb-2 truncate">
                               {skin.name}
@@ -687,7 +653,6 @@ export default function Page() {
                           transition={{ delay: index * 0.05 }}
                           layout
                         >
-                          {/* Imagen de la skin */}
                           <div className="relative h-40 sm:h-48 bg-gradient-to-br from-green-100 to-green-200 overflow-hidden">
                             <Image
                               src={getSkinImageUrl(skin.skin_code)}
@@ -698,7 +663,6 @@ export default function Page() {
                               onError={handleImageError}
                             />
 
-                            {/* Badge de estado */}
                             {isSkinEquipped(skin.skin_code) ? (
                               <motion.div
                                 className="absolute top-2 right-2 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1"
@@ -720,7 +684,6 @@ export default function Page() {
                               </motion.div>
                             )}
 
-                            {/* Valor en overlay */}
                             <div className="absolute bottom-2 left-2 bg-black/70 backdrop-blur-sm text-white px-2 py-1 rounded-lg flex items-center gap-1">
                               <FaCoins className="text-yellow-400 text-xs" />
                               <span className="text-xs font-bold">
@@ -729,7 +692,6 @@ export default function Page() {
                             </div>
                           </div>
 
-                          {/* Información de la skin */}
                           <div className="p-3 sm:p-4">
                             <h3 className="font-bold text-base sm:text-lg text-gray-800 mb-1 sm:mb-2 truncate">
                               {skin.name}

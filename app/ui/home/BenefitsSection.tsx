@@ -42,7 +42,6 @@ export default function BenefitsSection() {
               }}
               viewport={{ once: true, amount: 0.3 }}
             >
-              {/* Gradiente decorativo */}
               <div
                 className={`absolute -top-8 -right-8 w-24 h-24 rounded-full blur-2xl opacity-30 bg-gradient-to-tr ${b.color} pointer-events-none`}
               />

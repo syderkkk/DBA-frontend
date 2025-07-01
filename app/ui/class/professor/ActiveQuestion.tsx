@@ -37,7 +37,6 @@ export default function ActiveQuestion({
       exit={{ opacity: 0, y: -20, scale: 0.95 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
     >
-      {/* Header ultra compacto */}
       <div className="flex items-center justify-between mb-2 sm:mb-3">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-md">
@@ -69,14 +68,11 @@ export default function ActiveQuestion({
         </button>
       </div>
 
-      {/* Contenido principal ultra compacto */}
       <div className="bg-gradient-to-br from-white to-gray-50 rounded-lg p-2 sm:p-3 shadow-inner border border-blue-100">
-        {/* Pregunta */}
         <h4 className="text-sm sm:text-base font-semibold text-gray-800 mb-2 sm:mb-3 leading-tight">
           {preguntaActiva.pregunta}
         </h4>
 
-        {/* Opciones en 2 columnas para desktop */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
           {preguntaActiva.opciones.map((opcion: string, idx: number) => {
             const isCorrect = idx === preguntaActiva.correcta;
@@ -90,7 +86,6 @@ export default function ActiveQuestion({
                     : "border-gray-200 bg-white"
                 }`}
               >
-                {/* Letra de opción */}
                 <span
                   className={`flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 rounded-full text-xs font-bold flex items-center justify-center ${
                     isCorrect
@@ -101,12 +96,11 @@ export default function ActiveQuestion({
                   {String.fromCharCode(65 + idx)}
                 </span>
 
-                {/* Texto de opción */}
                 <span className="text-xs sm:text-sm text-gray-800 leading-tight flex-1 min-w-0">
                   {opcion}
                 </span>
 
-                {/* Indicador de correcto */}
+
                 {isCorrect && (
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <div className="bg-green-500 text-white px-1 py-0.5 rounded text-xs font-bold">
@@ -119,7 +113,6 @@ export default function ActiveQuestion({
           })}
         </div>
 
-        {/* Info footer compacta */}
         <div className="mt-2 p-2 bg-green-100 border border-green-300 rounded-lg">
           <div className="flex items-center justify-between text-xs">
             <div className="flex items-center gap-1">
